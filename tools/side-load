@@ -1,0 +1,23 @@
+#!/bin/bash
+VOL=/Volumes/GARMIN/
+if [ -z $1 ]; then
+    echo "usage: side-load <prg-file>"
+    exit 1
+fi
+PRG_FILE=$1
+while [ ! -d $VOL/GARMIN/APPS ]; do
+    sleep 1
+    echo Waiting for Garmin device to appear...
+done
+echo Clearing app log...
+rm $VOL/GARMIN/APPS/LOGS/CIQ_LOG.TXT
+touch $VOL/GARMIN/APPS/LOGS/CIQ_LOG.TXT
+echo Copying file...
+cp $PRG_FILE $VOL/GARMIN/APPS/
+if [ -z $FAST ]; then
+    echo Waiting for Garmin Connect Sync...
+    sleep 20
+fi
+echo Unmounting Garmin device...
+diskutil unmount $VOL
+echo Done.

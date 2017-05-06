@@ -1,0 +1,16 @@
+#!/bin/bash
+VOL=/Volumes/GARMIN/
+while [ ! -d $VOL/GARMIN/APPS ]; do
+    sleep 1
+    echo Waiting for Garmin device to appear...
+done
+
+# Make the logs get created...
+touch $VOL/GARMIN/APPS/LOGS/CIQ_LOG.TXT
+touch $VOL/GARMIN/APPS/LOGS/hU2.TXT
+
+echo CIQ_LOG.TXT:
+cat $VOL/GARMIN/APPS/LOGS/CIQ_LOG.TXT
+
+echo hU2.TXT:
+cat $VOL/GARMIN/APPS/LOGS/hU2.TXT
