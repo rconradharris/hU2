@@ -13,14 +13,12 @@ class LightView extends Ui.View {
 
     // Load your resources here
     function onLayout(dc) {
-
     }
 
     // Called when this View is brought to the foreground. Restore
     // the state of this View and prepare it to be shown. This includes
     // loading resources into memory.
     function onShow() {
-
     }
 
     // Update the view
@@ -28,25 +26,32 @@ class LightView extends Ui.View {
         var client = Application.getApp().getHueClient();
         var lights = client.getLights();
         var count = lights.size();
-        if (count == 0) {
-            // TODO: transition to NoLightsView
+        if (count <= 0) {
             return;
         }
         var light = lights[mIndex];
+        if (light == null) {
+            return;
+        }
 
-        var fgColor = light.getOn() ? Gfx.COLOR_BLACK : Gfx.COLOR_WHITE;
-        var bgColor = light.getOn() ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK;
-
-        dc.setColor(fgColor, bgColor);
+        // Draw light name
+        dc.setColor(Gfx.COLOR_WHITE, Gfx.COLOR_BLACK);
         dc.clear();
 
         var text = light.getName();
-        var font = Gfx.FONT_LARGE;
+        var font = Gfx.FONT_MEDIUM;
 
         var textDim = dc.getTextDimensions(text, font);
         var x = (dc.getWidth() - textDim[0]) / 2;
-        var y = (dc.getHeight() - textDim[1]) / 2;
+        var y = 15;
         dc.drawText(x, y, font, text, Gfx.TEXT_JUSTIFY_LEFT);
+
+        var color = Gfx.COLOR_DK_GRAY;
+        if (light.getOn()) {
+            color = Gfx.COLOR_WHITE;
+        }
+        dc.setColor(color, Gfx.COLOR_TRANSPARENT);
+        dc.fillCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 10, 30);
     }
 
     // Called when this View is removed from the screen. Save the
