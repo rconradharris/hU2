@@ -3,20 +3,10 @@ using Toybox.Application;
 using Hue;
 
 class hU2App extends Application.AppBase {
-    // This is an attribute of hU2App and not Hue.App in order to avoid
-    // circular references
-    var mLightCache = {};
-
-    hidden var mHueApp;
-
     hidden var mHueClient;
 
     function initialize() {
         AppBase.initialize();
-    }
-
-    function getHueApp() {
-        return mHueApp;
     }
 
     function getHueClient() {

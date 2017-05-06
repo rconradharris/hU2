@@ -1,6 +1,7 @@
 using Toybox.Communications;
 using Toybox.Lang;
 using Toybox.System;
+using Toybox.WatchUi as Ui;
 
 module Hue {
 
@@ -34,26 +35,24 @@ module Hue {
         }
 
 
-        function onTurnOn(responseCode, data) {
+        hidden function onTurnOnOff(responseCode, data, on) {
             if (responseCode != 200) {
                 // TODO: alert that an error occured
                 return;
             }
             System.println(data);
             if (data[0].hasKey("success")) {
-                mOn = true;
+                mOn = on;
+                Ui.requestUpdate();
             }
         }
 
+        function onTurnOn(responseCode, data) {
+            onTurnOnOff(responseCode, data, true);
+        }
+
         function onTurnOff(responseCode, data) {
-            if (responseCode != 200) {
-                // TODO: alert that an error occured
-                return;
-            }
-            System.println(data);
-            if (data[0].hasKey("success")) {
-                mOn = false;
-            }
+            onTurnOnOff(responseCode, data, false);
         }
     }
 
