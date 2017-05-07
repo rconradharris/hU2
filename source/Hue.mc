@@ -1,3 +1,4 @@
+using Toybox.Application;
 using Toybox.Communications;
 using Toybox.Lang;
 using Toybox.System;
@@ -10,6 +11,8 @@ module Hue {
         hidden var mName = null;
         hidden var mOn = null;
         hidden var mReachable = null;
+
+        hidden var mBusy = false;
 
         function initialize(id, name, on, reachable) {
             mId = id;
@@ -34,17 +37,26 @@ module Hue {
             return mReachable();
         }
 
+        function setBusy(busy) {
+            mBusy = busy;
+        }
+
+        function getBusy() {
+            return mBusy;
+        }
 
         hidden function onTurnOnOff(responseCode, data, on) {
             if (responseCode != 200) {
                 // TODO: alert that an error occured
                 return;
             }
+            Application.getApp().blinkerDown();
+            setBusy(false);
             System.println(data);
             if (data[0].hasKey("success")) {
                 mOn = on;
-                Ui.requestUpdate();
             }
+            Ui.requestUpdate();
         }
 
         function onTurnOn(responseCode, data) {
@@ -143,6 +155,8 @@ module Hue {
             if (!validateState([STATE_READY], "turnOnLight")) {
                 return;
             }
+            Application.getApp().blinkerUp();
+            light.setBusy(true);
             var callback = on ? light.method(:onTurnOn) : light.method(:onTurnOff);
             var url = Lang.format("/lights/$1$/state", [light.getId()]);
             doRequest(Communications.HTTP_REQUEST_METHOD_PUT, url, { "on" => on }, callback);

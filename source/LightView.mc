@@ -5,6 +5,7 @@ using Toybox.System;
 
 class LightView extends Ui.View {
     hidden var mIndex = null;
+    hidden var mBlinkerOn = false;
 
     function initialize(index) {
         View.initialize();
@@ -46,12 +47,24 @@ class LightView extends Ui.View {
         var y = 15;
         dc.drawText(x, y, font, text, Gfx.TEXT_JUSTIFY_LEFT);
 
-        var color = Gfx.COLOR_DK_GRAY;
-        if (light.getOn()) {
-            color = Gfx.COLOR_WHITE;
+        if (light.getBusy()) {
+            // If we're busy then blink the light...
+            mBlinkerOn = !mBlinkerOn;
+        } else if (light.getOn()) {
+            mBlinkerOn = true;
+        } else {
+            mBlinkerOn = false;
         }
-        dc.setColor(color, Gfx.COLOR_TRANSPARENT);
-        dc.fillCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 10, 30);
+
+        if (mBlinkerOn) {
+            dc.setColor(Gfx.COLOR_YELLOW, Gfx.COLOR_TRANSPARENT);
+            dc.fillCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 10, 30);
+        } else {
+            dc.setColor(Gfx.COLOR_DK_GRAY, Gfx.COLOR_TRANSPARENT);
+            dc.setPenWidth(3);
+            dc.drawCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 10, 30);
+        }
+
     }
 
     // Called when this View is removed from the screen. Save the
