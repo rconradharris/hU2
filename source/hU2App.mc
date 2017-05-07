@@ -6,14 +6,36 @@ using Toybox.WatchUi as Ui;
 using Hue;
 
 class hU2App extends Application.AppBase {
-    hidden var mBridge;
-    hidden var mHueClient;
+    enum {
+        AS_NO_BRIDGE,
+        AS_DISCOVERING_BRIDGE,
+        AS_NO_USERNAME,
+        AS_REGISTERING,
+        AS_PHONE_NOT_CONNECTED,
+        AS_SYNCING,
+        AS_READY
+    }
+
+    hidden var mState =  AS_NO_BRIDGE;
+    hidden var mBridge = null;
+    hidden var mUsername = null;
+    hidden var mHueClient = null;
 
     hidden var mBlinkerTimer = null;
+    hidden var mStateTimer = null;
     hidden var mBlinkerSemaphore = 0;
 
     function initialize() {
         AppBase.initialize();
+    }
+
+    function getState() {
+        return mState;
+    }
+
+    function setState(state) {
+        mState = state;
+        Ui.requestUpdate();
     }
 
     function getHueClient() {
@@ -50,10 +72,72 @@ class hU2App extends Application.AppBase {
 
     // onStart() is called on application start up
     function onStart(state) {
-        mBridge = new Hue.Bridge("10.0.1.2");
-        mHueClient = new Hue.Client(mBridge, "AREVe-BgAjf8GdoFvuefnPP-ocu0IDVWa1-kNlr-");
-        mHueClient.sync();
+        var bridgeIP = PropertyStore.get("bridgeIP");
+        if (bridgeIP != null) {
+            setState(AS_NO_USERNAME);
+            mBridge = new Hue.Bridge(bridgeIP);
+            var username = PropertyStore.get("username");
+            if (username != null) {
+                mHueClient = new Hue.Client(mBridge, username);
+                if (System.getDeviceSettings().phoneConnected) {
+                    setState(AS_SYNCING);
+                    mHueClient.sync(method(:onSync));
+                } else {
+                    setState(AS_PHONE_NOT_CONNECTED);
+                }
+            }
+        }
         mBlinkerTimer = new Timer.Timer();
+        mStateTimer = new Timer.Timer();
+        mStateTimer.start(method(:onStateTick), 3000, true);
+        onStateTick();
+    }
+
+    function onDiscoverBridgeIP(bridgeIP) {
+        if (bridgeIP == null) {
+            setState(AS_NO_BRIDGE);
+        } else {
+            setState(AS_NO_USERNAME);
+            PropertyStore.set("bridgeIP", bridgeIP);
+            mBridge = new Hue.Bridge(bridgeIP);
+        }
+    }
+
+    function onRegister(username) {
+        if (username == null) {
+            setState(AS_NO_USERNAME);
+        } else {
+            PropertyStore.set("username", username);
+            mHueClient = new Hue.Client(mBridge, username);
+            if (System.getDeviceSettings().phoneConnected) {
+                setState(AS_SYNCING);
+                mHueClient.sync(method(:onSync));
+            } else {
+                setState(AS_PHONE_NOT_CONNECTED);
+            }
+        }
+    }
+
+    function onSync(success) {
+        if (success) {
+            setState(AS_READY);
+        }
+    }
+
+    function onStateTick() {
+        var state = mState;
+        if (state == AS_NO_BRIDGE) {
+            setState(AS_DISCOVERING_BRIDGE);
+            Hue.discoverBridgeIP(method(:onDiscoverBridgeIP));
+        } else if (state == AS_NO_USERNAME) {
+            setState(AS_REGISTERING);
+            mBridge.register(method(:onRegister));
+        } else if (state == AS_PHONE_NOT_CONNECTED) {
+            if (System.getDeviceSettings().phoneConnected) {
+                setState(AS_SYNCING);
+                mHueClient.sync(method(:onSync));
+            }
+        }
     }
 
     // onStop() is called when your application is exiting
@@ -61,6 +145,10 @@ class hU2App extends Application.AppBase {
         if (mBlinkerTimer != null) {
             mBlinkerTimer.stop();
             mBlinkerTimer = null;
+        }
+        if (mStateTimer != null) {
+            mStateTimer.stop();
+            mStateTimer = null;
         }
     }
 
@@ -70,6 +158,11 @@ class hU2App extends Application.AppBase {
     }
 
     function reset() {
-        // TODO: properly reset state
+        PropertyStore.clear();
+        mState =  AS_NO_BRIDGE;
+        mBridge = null;
+        mUsername = null;
+        mHueClient = null;
+
     }
 }

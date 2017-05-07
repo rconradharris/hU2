@@ -45,7 +45,7 @@ class LightDelegate extends Ui.BehaviorDelegate {
         var lights = client.getLights();
         var count = lights.size();
         if (count == 0) {
-            // TODO: transition to NoLightsView
+            return false;
         }
         if (mIndex > count - 1) {
             mIndex = count - 1;

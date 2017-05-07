@@ -6,6 +6,97 @@ using Toybox.WatchUi as Ui;
 
 module Hue {
 
+    // Hack to allow us to build a callback closure
+    class _DiscoverBridgeCallback {
+        hidden var mCallback = null;
+
+        function initialize(callback) {
+            mCallback = callback;
+        }
+
+        function onResponse(responseCode, data) {
+            var bridgeIP = null;
+            System.println(responseCode);
+            if (responseCode == 200) {
+                System.println(data);
+                if (data has :size && data.size() > 0) {
+                    System.println(data[0]);
+                    if (data[0] has :hasKey && data[0].hasKey("internalipaddress")) {
+                        System.println(data[0]["internalipaddress"]);
+                        bridgeIP = data[0]["internalipaddress"];
+                    }
+                }
+            }
+            System.println("invoking with bridgeIP " + bridgeIP);
+            mCallback.invoke(bridgeIP);
+        }
+    }
+
+    // Hack to allow us to build a callback closure
+    class _RegisterCallback {
+        hidden var mCallback = null;
+
+        function onResponse(responseCode, data) {
+            var username = null;
+            System.println(responseCode);
+            if (responseCode == 200) {
+                System.println(data);
+                if (data has :size && data.size() > 0) {
+                    System.println(data[0]);
+                    if (data[0] has :hasKey && data[0].hasKey("success")) {
+                        System.println(data[0]["success"]);
+                        username = data[0]["success"]["username"];
+                    }
+                }
+            }
+            System.println("invoking with username " + username);
+            mCallback.invoke(username);
+        }
+
+
+        function initialize(callback) {
+            mCallback = callback;
+        }
+    }
+
+    class _FetchCallback {
+        hidden var mClient = null;
+        hidden var mCallback = null;
+
+        function initialize(client, callback) {
+            mClient = client;
+            mCallback = callback;
+        }
+
+        function onResponse(responseCode, data) {
+            var success = false;
+            if (responseCode == 200) {
+                success = true;
+                var lightIds = data.keys();
+                for (var i=0; i < lightIds.size(); i++) {
+                    var lightId = lightIds[i];
+                    var ld = data[lightId];
+                    var st = ld["state"];
+                    var light = new Light(lightId, ld["name"], st["on"], st["reachable"]);
+                    mClient.addLight(light);
+                }
+            }
+            mCallback.invoke(success);
+        }
+    }
+
+
+    function discoverBridgeIP(callback) {
+            var options = { :method => Communications.HTTP_REQUEST_METHOD_GET,
+                            :headers => { "Content-Type" => Communications.REQUEST_CONTENT_TYPE_JSON },
+                            :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON };
+            var url = "https://www.meethue.com/api/nupnp";
+            System.println(url);
+            var callbackWrapper = new _DiscoverBridgeCallback(callback);
+            Communications.makeWebRequest(url, null, options, callbackWrapper.method(:onResponse));
+    }
+
+
     class Light {
         hidden var mId = null;
         hidden var mName = null;
@@ -84,6 +175,12 @@ module Hue {
             Communications.makeWebRequest(fullUrl, params, options, callback);
         }
 
+        function register(callback) {
+            doRequest(Communications.HTTP_REQUEST_METHOD_POST, "/",
+                      { "devicetype" => "hU2" },
+                      new _RegisterCallback(callback).method(:onResponse));
+        }
+
     }
 
     class Client {
@@ -96,7 +193,6 @@ module Hue {
         hidden var mBridge = null;
         hidden var mUsername = null;
         hidden var mLights = {};
-        hidden var mState = STATE_NONE;
 
         function initialize(bridge, username) {
             mBridge = bridge;
@@ -107,31 +203,14 @@ module Hue {
             mBridge.doRequest(method, Lang.format("/$1$$2$", [mUsername, url]), params, callback);
         }
 
-        function onFetchLights(responseCode, data) {
-            if (!validateState([STATE_SYNCING], "onFetchLights")) {
-                return;
-            }
-            mState = STATE_READY;
-            if (responseCode != 200) {
-                // TODO: alert that an error occured
-                return;
-            }
-            var lightIds = data.keys();
-            for (var i=0; i < lightIds.size(); i++) {
-                var lightId = lightIds[i];
-                var ld = data[lightId];
-                var st = ld["state"];
-                var light = new Light(lightId, ld["name"], st["on"], st["reachable"]);
-                mLights[lightId] = light;
-            }
+        function addLight(light) {
+            mLights[light.getId()] = light;
         }
 
-        function sync() {
-            if (!validateState([STATE_NONE, STATE_READY], "sync")) {
-                return;
-            }
-            mState = STATE_SYNCING;
-            doRequest(Communications.HTTP_REQUEST_METHOD_GET, "/lights", {}, method(:onFetchLights));
+        function sync(callback) {
+            var callbackWrapper = new _FetchCallback(self, callback);
+            doRequest(Communications.HTTP_REQUEST_METHOD_GET,
+                      "/lights", {}, callbackWrapper.method(:onResponse));
         }
 
         function getLights() {
@@ -142,21 +221,8 @@ module Hue {
             return mLights[lightId];
         }
 
-        hidden function validateState(allowedStates, funcName) {
-            var allowed = allowedStates.indexOf(mState) >= 0;
-            if (!allowed) {
-                var msg = Lang.format("$1$: state validation failed current=$2$ allowed=$3$",
-                                      [funcName, mState, allowedStates]);
-                System.println(msg);
-            }
-            return allowed;
-        }
-
         function turnOnAllLights(on) {
             // FIXME: Re-work this to use a single Group 0 PUT
-            if (!validateState([STATE_READY], "turnOnAllLights")) {
-                return;
-            }
             var lights = getLights();
             for (var i=0; i < lights.size(); i++) {
                 var light = lights[i];
@@ -165,9 +231,6 @@ module Hue {
         }
 
         function turnOnLight(light, on) {
-            if (!validateState([STATE_READY], "turnOnLight")) {
-                return;
-            }
             Application.getApp().blinkerUp();
             light.setBusy(true);
             var callback = on ? light.method(:onTurnOn) : light.method(:onTurnOff);
