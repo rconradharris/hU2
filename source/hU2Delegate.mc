@@ -12,11 +12,11 @@ class SettingsMenuInputDelegate extends Ui.MenuInputDelegate {
         var app = Application.getApp();
         app.hapticFeedback();
         if (item == :all_off) {
-            if (app.getState() == app.STATE_READY) {
+            if (app.getState() == app.AS_READY) {
                 app.getHueClient().turnOnAllLights(false);
             }
         } else if (item == :all_on) {
-            if (app.getState() == app.STATE_READY) {
+            if (app.getState() == app.AS_READY) {
                 app.getHueClient().turnOnAllLights(true);
             }
         } else if (item == :reset) {
@@ -38,7 +38,7 @@ class hU2Delegate extends Ui.BehaviorDelegate {
         var title =  Lang.format("$1$ $2$", [Ui.loadResource(Rez.Strings.AppName), Ui.loadResource(Rez.Strings.AppVersion)]);
         menu.setTitle(title);
 
-        if (app.getHueClient() != null) {
+        if (app.getState() == app.AS_READY) {
             menu.addItem(Ui.loadResource(Rez.Strings.all_off), :all_off);
             menu.addItem(Ui.loadResource(Rez.Strings.all_on), :all_on);
         }

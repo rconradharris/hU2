@@ -184,12 +184,6 @@ module Hue {
     }
 
     class Client {
-        enum {
-            STATE_NONE,
-            STATE_SYNCING,
-            STATE_READY
-        }
-
         hidden var mBridge = null;
         hidden var mUsername = null;
         hidden var mLights = {};
