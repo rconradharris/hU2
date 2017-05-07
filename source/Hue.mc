@@ -68,6 +68,24 @@ module Hue {
         }
     }
 
+    class Bridge {
+        hidden var mIPAddress = null;
+
+        function initialize(ipAddress) {
+            mIPAddress = ipAddress;
+        }
+
+        function doRequest(method, url, params, callback) {
+            var options = { :method => method,
+                            :headers => { "Content-Type" => Communications.REQUEST_CONTENT_TYPE_JSON },
+                            :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON };
+            var fullUrl = Lang.format("http://$1$/api$2$", [mIPAddress, url]);
+            System.println(fullUrl);
+            Communications.makeWebRequest(fullUrl, params, options, callback);
+        }
+
+    }
+
     class Client {
         enum {
             STATE_NONE,
@@ -75,23 +93,18 @@ module Hue {
             STATE_READY
         }
 
-        hidden var mBridgeIP = null;
+        hidden var mBridge = null;
         hidden var mUsername = null;
         hidden var mLights = {};
         hidden var mState = STATE_NONE;
 
-        function initialize(bridgeIP, username) {
-            mBridgeIP = bridgeIP;
+        function initialize(bridge, username) {
+            mBridge = bridge;
             mUsername = username;
         }
 
         hidden function doRequest(method, url, params, callback) {
-            var options = { :method => method,
-                            :headers => { "Content-Type" => Communications.REQUEST_CONTENT_TYPE_JSON },
-                            :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON };
-            var fullUrl = Lang.format("http://$1$/api/$2$$3$", [mBridgeIP, mUsername, url]);
-            System.println(fullUrl);
-            Communications.makeWebRequest(fullUrl, params, options, callback);
+            mBridge.doRequest(method, Lang.format("/$1$$2$", [mUsername, url]), params, callback);
         }
 
         function onFetchLights(responseCode, data) {

@@ -6,6 +6,7 @@ using Toybox.WatchUi as Ui;
 using Hue;
 
 class hU2App extends Application.AppBase {
+    hidden var mBridge;
     hidden var mHueClient;
 
     hidden var mBlinkerTimer = null;
@@ -49,7 +50,8 @@ class hU2App extends Application.AppBase {
 
     // onStart() is called on application start up
     function onStart(state) {
-        mHueClient = new Hue.Client("10.0.1.2", "AREVe-BgAjf8GdoFvuefnPP-ocu0IDVWa1-kNlr-");
+        mBridge = new Hue.Bridge("10.0.1.2");
+        mHueClient = new Hue.Client(mBridge, "AREVe-BgAjf8GdoFvuefnPP-ocu0IDVWa1-kNlr-");
         mHueClient.sync();
         mBlinkerTimer = new Timer.Timer();
     }
