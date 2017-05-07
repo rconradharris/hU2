@@ -43,10 +43,8 @@ class hU2View extends Ui.View {
             text = "No Bridge";
         } else if (state == app.AS_DISCOVERING_BRIDGE) {
             text = "Discovering Bridge";
-        } else if (state == app.AS_NO_USERNAME) {
+        } else if (state == app.AS_NO_USERNAME || state == app.AS_REGISTERING) {
             text = "Press Button on Hue";
-        } else if (state == app.AS_REGISTERING) {
-            text = "Registering";
         } else if (state == app.AS_PHONE_NOT_CONNECTED) {
             text = "Phone Not Connected";
         } else if (state == app.AS_SYNCING) {
