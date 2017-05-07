@@ -77,7 +77,10 @@ module Hue {
                     var lightId = lightIds[i];
                     var ld = data[lightId];
                     var st = ld["state"];
-                    var light = new Light(lightId, ld["name"], st["on"], st["reachable"]);
+                    var light = new Light(lightId, ld["name"],
+                                         st["on"],
+                                         st["bri"],
+                                         st["reachable"]);
                     mClient.addLight(light);
                 }
             }
@@ -100,15 +103,18 @@ module Hue {
     class Light {
         hidden var mId = null;
         hidden var mName = null;
+
         hidden var mOn = null;
+        hidden var mBrightness = null;
         hidden var mReachable = null;
 
         hidden var mBusy = false;
 
-        function initialize(id, name, on, reachable) {
+        function initialize(id, name, on, brightness, reachable) {
             mId = id;
             mName = name;
             mOn = on;
+            mBrightness = brightness;
             mReachable = reachable;
         }
 
@@ -124,8 +130,16 @@ module Hue {
             return mOn;
         }
 
+        function setOn(on) {
+            mOn = on;
+        }
+
         function getReachable() {
             return mReachable();
+        }
+
+        function setReachable(reachable) {
+            mReachable = reachable;
         }
 
         function setBusy(busy) {
@@ -136,26 +150,12 @@ module Hue {
             return mBusy;
         }
 
-        hidden function onTurnOnOff(responseCode, data, on) {
-            if (responseCode != 200) {
-                // TODO: alert that an error occured
-                return;
-            }
-            Application.getApp().blinkerDown();
-            setBusy(false);
-            System.println(data);
-            if (data[0].hasKey("success")) {
-                mOn = on;
-            }
-            Ui.requestUpdate();
+        function setBrightness(brightness) {
+            mBrightness = brightness;
         }
 
-        function onTurnOn(responseCode, data) {
-            onTurnOnOff(responseCode, data, true);
-        }
-
-        function onTurnOff(responseCode, data) {
-            onTurnOnOff(responseCode, data, false);
+        function getBrightness() {
+            return mBrightness;
         }
     }
 
@@ -225,17 +225,83 @@ module Hue {
         }
 
         function turnOnLight(light, on) {
-            Application.getApp().blinkerUp();
-            light.setBusy(true);
-            var callback = on ? light.method(:onTurnOn) : light.method(:onTurnOff);
-            var url = Lang.format("/lights/$1$/state", [light.getId()]);
-            doRequest(Communications.HTTP_REQUEST_METHOD_PUT, url, { "on" => on }, callback);
+            changeState(light, null, { "on" => on });
         }
 
         function toggleLight(light) {
             turnOnLight(light, !light.getOn());
         }
+
+        function setBrightness(light, brightness) {
+            changeState(light, null, { "bri" => brightness });
+        }
+
+        // Params:
+        //      "on"    : true|false
+        //      "bri"   : 0..254
+        hidden function changeState(light, callback, params) {
+            Application.getApp().blinkerUp();
+            light.setBusy(true);
+            var callbackWrapper = new _ChangeLightStateCallback(light, callback, params);
+            var url = Lang.format("/lights/$1$/state", [light.getId()]);
+            doRequest(Communications.HTTP_REQUEST_METHOD_PUT, url, params,
+                      callbackWrapper.method(:onResponse));
+        }
+
     }
 
+    class _ChangeLightStateCallback {
+        hidden var mLight = null;
+        hidden var mCallback = null;
+        hidden var mParams = null;
 
+        function initialize(light, callback, params) {
+            mLight = light;
+            mCallback = callback;
+            mParams = params;
+        }
+
+        function onResponse(responseCode, data) {
+            Application.getApp().blinkerDown();
+            mLight.setBusy(false);
+            if (responseCode == 200) {
+                // Build response url to symbol lookup table so we later know
+                // which attribute to update on the Light object
+                var lightId = mLight.getId();
+                var lookup = {};
+                var keys = mParams.keys();
+                for (var i=0; i < mParams.size(); i++) {
+                    var param = keys[i];
+                    var url = Lang.format("/lights/$1$/state/$2$", [lightId, param]);
+                    var attrSym = null;
+                    if (param.equals("on")) {
+                        attrSym = :on;
+                    } else if (param.equals("bri")) {
+                        attrSym = :bri;
+                    }
+                    lookup[url] = attrSym;
+                }
+
+                for (var i=0; i < data.size(); i++) {
+                    if (data[i].hasKey("success")) {
+                        var stateItemDict = data[i]["success"];
+                        var url = stateItemDict.keys()[0];
+                        var value = stateItemDict[url];
+                        var attrSym = lookup[url];
+                        if (attrSym != null) {
+                            if (attrSym == :on) {
+                                mLight.setOn(value);
+                            } if (attrSym == :bri) {
+                                mLight.setBrightness(value);
+                            }
+                        }
+                    }
+                }
+            }
+            if (mCallback != null) {
+                mCallback.invoke();
+            }
+            Ui.requestUpdate();
+        }
+    }
 }

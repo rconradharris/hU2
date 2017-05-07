@@ -4,5 +4,6 @@
     <string id="AppVersion">0.1</string>
     <string id="all_off">All Off</string>
     <string id="all_on">All On</string>
+    <string id="brightness">Brightness</string>
     <string id="reset">Reset</string>
 </strings>
