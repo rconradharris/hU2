@@ -1,4 +1,5 @@
 using Toybox.Application;
+using Toybox.Attention;
 using Toybox.Timer;
 using Toybox.WatchUi as Ui;
 
@@ -36,6 +37,13 @@ class hU2App extends Application.AppBase {
         }
         if (mBlinkerSemaphore == 0) {
             mBlinkerTimer.stop();
+        }
+    }
+
+    function hapticFeedback() {
+        var ds = System.getDeviceSettings();
+        if ((Attention has :vibrate) && ds.vibrateOn && ds.isTouchScreen) {
+            Attention.vibrate([new Attention.VibeProfile(50, 30)]);
         }
     }
 

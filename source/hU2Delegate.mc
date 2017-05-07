@@ -9,6 +9,7 @@ class SettingsMenuInputDelegate extends Ui.MenuInputDelegate {
 
     function onMenuItem(item) {
         var app = Application.getApp();
+        app.hapticFeedback();
         var client = app.getHueClient();
         if (item == :all_off) {
             client.turnOnAllLights(false);
@@ -26,6 +27,7 @@ class hU2Delegate extends Ui.BehaviorDelegate {
     }
 
     function onMenu() {
+        Application.getApp().hapticFeedback();
         var menu = new Ui.Menu();
         var title =  Lang.format("$1$ $2$", [Ui.loadResource(Rez.Strings.AppName), Ui.loadResource(Rez.Strings.AppVersion)]);
         menu.setTitle(title);
@@ -37,6 +39,7 @@ class hU2Delegate extends Ui.BehaviorDelegate {
     }
 
     function onSelect() {
+        Application.getApp().hapticFeedback();
         Ui.pushView(new LightView(0), new LightDelegate(0), Ui.SLIDE_UP);
     }
  }

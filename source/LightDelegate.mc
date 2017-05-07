@@ -27,6 +27,11 @@ class LightDelegate extends Ui.BehaviorDelegate {
         return true;
     }
 
+    function onBack() {
+        Application.getApp().hapticFeedback();
+        return false;
+    }
+
     function onNextPage() {
         return switchPage(+1, Ui.SLIDE_LEFT);
     }
@@ -45,6 +50,8 @@ class LightDelegate extends Ui.BehaviorDelegate {
         if (mIndex > count - 1) {
             mIndex = count - 1;
         }
+
+        Application.getApp().hapticFeedback();
         var light = lights[mIndex];
         client.toggleLight(light);
         return true;
