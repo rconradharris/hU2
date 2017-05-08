@@ -23,12 +23,6 @@ class hU2View extends Ui.View {
     function onShow() {
     }
 
-    hidden function drawCenteredText(dc, y, font, text) {
-        var dim = dc.getTextDimensions(text, font);
-        dc.drawText(dc.getWidth() / 2, y, font, text, Gfx.TEXT_JUSTIFY_CENTER);
-        return dim[1];
-    }
-
     hidden function drawBoxText(dc, x, y, font, lines, textColor, boxColor, margin, radius) {
         var textHeight = 0;
         var textMaxWidth = 0;
@@ -95,7 +89,7 @@ class hU2View extends Ui.View {
         return logoHeight;
     }
 
-    hidden function drawSyncing(dc) {
+    hidden function drawSyncing(dc, y) {
         var textColor = Gfx.COLOR_WHITE;
         if (mBlinkCount > 10) {
             textColor = Gfx.COLOR_BLUE;
@@ -103,38 +97,38 @@ class hU2View extends Ui.View {
         // 20 means 10 ticks on, 10 ticks off
         mBlinkCount = (mBlinkCount + 1) % 20;
         var lines = [Ui.loadResource(Rez.Strings.syncing)];
-        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
                                      lines, textColor, Gfx.COLOR_BLUE,
                                      BOX_MARGIN, BOX_RADIUS);
     }
 
-    hidden function drawReady(dc) {
+    hidden function drawReady(dc, y) {
         var lines = [Ui.loadResource(Rez.Strings.ready)];
-        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
                                      lines, Gfx.COLOR_WHITE, Gfx.COLOR_GREEN,
                                      BOX_MARGIN, BOX_RADIUS);
 
 
     }
 
-    hidden function drawPhoneNotConnected(dc) {
+    hidden function drawPhoneNotConnected(dc, y) {
         var lines = [Ui.loadResource(Rez.Strings.phone_not_connected0),
                      Ui.loadResource(Rez.Strings.phone_not_connected1)];
-        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
                                      lines, Gfx.COLOR_WHITE, Gfx.COLOR_RED,
                                      BOX_MARGIN, BOX_RADIUS);
     }
 
-    hidden function drawPressButtonOnHue(dc) {
+    hidden function drawPressButtonOnHue(dc, y) {
         var lines = [Ui.loadResource(Rez.Strings.press_button0),
                      Ui.loadResource(Rez.Strings.press_button1)];
-        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
                                      lines, Gfx.COLOR_WHITE, Gfx.COLOR_BLUE,
                                      BOX_MARGIN, BOX_RADIUS);
 
     }
 
-    hidden function drawDiscoveringBridge(dc) {
+    hidden function drawDiscoveringBridge(dc, y) {
         var textColor = Gfx.COLOR_WHITE;
         if (mBlinkCount > 10) {
             textColor = Gfx.COLOR_BLUE;
@@ -143,22 +137,22 @@ class hU2View extends Ui.View {
         mBlinkCount = (mBlinkCount + 1) % 20;
         var lines = [Ui.loadResource(Rez.Strings.discovering_bridge0),
                      Ui.loadResource(Rez.Strings.discovering_bridge1)];
-        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
                                      lines, textColor, Gfx.COLOR_BLUE,
                                      BOX_MARGIN, BOX_RADIUS);
     }
 
-    hidden function drawNoBridge(dc) {
+    hidden function drawNoBridge(dc, y) {
         var lines = [Ui.loadResource(Rez.Strings.no_bridge0),
                      Ui.loadResource(Rez.Strings.no_bridge1)];
-        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
                                      lines, Gfx.COLOR_WHITE, Gfx.COLOR_RED,
                                      BOX_MARGIN, BOX_RADIUS);
     }
 
-    hidden function drawInit(dc) {
+    hidden function drawInit(dc, y) {
         var lines = [Ui.loadResource(Rez.Strings.init)];
-        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
                                      lines, Gfx.COLOR_WHITE, Gfx.COLOR_BLUE,
                                      BOX_MARGIN, BOX_RADIUS);
     }
@@ -176,26 +170,39 @@ class hU2View extends Ui.View {
         y += drawLogo(dc, y);
 
         dc.setColor(Gfx.COLOR_DK_GRAY, Gfx.COLOR_BLACK);
-        y += drawCenteredText(dc, y, Gfx.FONT_TINY, Ui.loadResource(Rez.Strings.AppDescription));
+        var descFont = Gfx.FONT_TINY;
+        var descText = Ui.loadResource(Rez.Strings.AppDescription);
+        dc.drawText(dc.getWidth() / 2, y, descFont, descText,
+                    Gfx.TEXT_JUSTIFY_CENTER);
 
         dc.setColor(Gfx.COLOR_WHITE, Gfx.COLOR_BLACK);
         var text = "-";
+
+        var boxY = dc.getHeight() / 2;
+
+        // HACK: Nasty hack to make the description text visible on the
+        // Vivoactive
+        if (dc.getWidth() == 205 && dc.getHeight() == 148) {
+            var descDim = dc.getTextDimensions(descText, descFont);
+            boxY += descDim[1] + 5;
+        }
+
         var app = Application.getApp();
         var state = app.getState();
         if (state == app.AS_INIT) {
-            drawInit(dc);
+            drawInit(dc, boxY);
         } else if (state == app.AS_NO_BRIDGE) {
-            drawNoBridge(dc);
+            drawNoBridge(dc, boxY);
         } else if (state == app.AS_DISCOVERING_BRIDGE) {
-            drawDiscoveringBridge(dc);
+            drawDiscoveringBridge(dc, boxY);
         } else if (state == app.AS_NO_USERNAME || state == app.AS_REGISTERING) {
-            drawPressButtonOnHue(dc);
+            drawPressButtonOnHue(dc, boxY);
         } else if (state == app.AS_PHONE_NOT_CONNECTED) {
-            drawPhoneNotConnected(dc);
+            drawPhoneNotConnected(dc, boxY);
         } else if (state == app.AS_SYNCING) {
-            drawSyncing(dc);
+            drawSyncing(dc, boxY);
         } else if (state == app.AS_READY) {
-            drawReady(dc);
+            drawReady(dc, boxY);
         }
     }
 
