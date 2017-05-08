@@ -7,8 +7,9 @@ using Hue;
 
 class hU2App extends Application.AppBase {
     enum {
-        AS_NO_BRIDGE,
+        AS_INIT,
         AS_DISCOVERING_BRIDGE,
+        AS_NO_BRIDGE,
         AS_NO_USERNAME,
         AS_REGISTERING,
         AS_PHONE_NOT_CONNECTED,
@@ -19,10 +20,11 @@ class hU2App extends Application.AppBase {
     hidden const BLINKER_TIMER_MS = 100;
     hidden const STATE_TIMER_MS = 3000;
 
-    hidden var mState =  AS_NO_BRIDGE;
+    hidden var mState =  AS_INIT;
     hidden var mBridge = null;
     hidden var mUsername = null;
     hidden var mHueClient = null;
+    hidden var mSynced = false;
 
     hidden var mBlinkerTimer = null;
     hidden var mStateTimer = null;
@@ -133,21 +135,33 @@ class hU2App extends Application.AppBase {
         if (success) {
             blinkerDown();
             setState(AS_READY);
+            mSynced = true;
         }
     }
 
     function onStateTick() {
         var state = mState;
-        if (state == AS_NO_BRIDGE) {
+
+        var phoneConnected = System.getDeviceSettings().phoneConnected;
+
+        if (state == AS_INIT) {
             setState(AS_DISCOVERING_BRIDGE);
             Hue.discoverBridgeIP(method(:onDiscoverBridgeIP));
         } else if (state == AS_NO_USERNAME) {
             setState(AS_REGISTERING);
             mBridge.register(method(:onRegister));
         } else if (state == AS_PHONE_NOT_CONNECTED) {
-            if (System.getDeviceSettings().phoneConnected) {
-                setState(AS_SYNCING);
-                mHueClient.sync(method(:onSync));
+            if (phoneConnected) {
+                if (mSynced) {
+                    setState(AS_READY);
+                } else {
+                    setState(AS_SYNCING);
+                    mHueClient.sync(method(:onSync));
+                }
+            }
+        } else {
+            if (!phoneConnected) {
+                setState(AS_PHONE_NOT_CONNECTED);
             }
         }
     }
@@ -171,7 +185,7 @@ class hU2App extends Application.AppBase {
 
     function reset() {
         PropertyStore.clear();
-        mState =  AS_NO_BRIDGE;
+        mState =  AS_INIT;
         mBridge = null;
         mUsername = null;
         mHueClient = null;

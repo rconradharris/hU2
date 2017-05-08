@@ -5,6 +5,8 @@
     <string id="all_off">All Off</string>
     <string id="all_on">All On</string>
     <string id="brightness">Brightness</string>
+    <string id="phone_not_connected0">Phone</string>
+    <string id="phone_not_connected1">Not Connected</string>
     <string id="ready">Ready</string>
     <string id="reset">Reset</string>
     <string id="syncing">Syncing</string>

@@ -3,7 +3,7 @@ using Toybox.Graphics as Gfx;
 using Toybox.System;
 
 class hU2View extends Ui.View {
-    hidden const BOX_MARGIN = 30;
+    hidden const BOX_MARGIN = 15;
     hidden const BOX_RADIUS = 10;
 
     // Used to blink 1 out of every 10 timer ticks
@@ -29,12 +29,22 @@ class hU2View extends Ui.View {
         return dim[1];
     }
 
-    hidden function drawCenteredTextInRoundedBox(dc, y, font, text, textColor, boxColor, margin, radius) {
-        var dim = dc.getTextDimensions(text, font);
-        var width = dim[0] + margin;
-        var height = dim[1] + margin;
-        var boxX = (dc.getWidth() - width) / 2;
-        var boxY = y - (margin / 2);
+    hidden function drawBoxText(dc, x, y, font, lines, textColor, boxColor, margin, radius) {
+        var textHeight = 0;
+        var textMaxWidth = 0;
+        for (var i=0; i < lines.size(); i++) {
+            var dim = dc.getTextDimensions(lines[i], font);
+            if (dim[0] > textMaxWidth) {
+                textMaxWidth = dim[0];
+            }
+            textHeight += dim[1];
+        }
+
+        var width = textMaxWidth + 2 * margin;
+        var height = textHeight + 2 * margin;
+
+        var boxX = x - (width / 2);
+        var boxY = y - (height / 2);
 
         // Draw box
         dc.setColor(boxColor, Gfx.COLOR_TRANSPARENT);
@@ -42,7 +52,13 @@ class hU2View extends Ui.View {
 
         // Draw text
         dc.setColor(textColor, Gfx.COLOR_TRANSPARENT);
-        dc.drawText(dc.getWidth() / 2, y, font, text, Gfx.TEXT_JUSTIFY_CENTER);
+
+        y -= textHeight / 2;
+        for (var i=0; i < lines.size(); i++) {
+            var dim = dc.getTextDimensions(lines[i], font);
+            dc.drawText(x, y, font, lines[i], Gfx.TEXT_JUSTIFY_CENTER);
+            y += dim[1];
+        }
     }
 
     hidden function drawLogo(dc, y) {
@@ -80,21 +96,32 @@ class hU2View extends Ui.View {
     }
 
     hidden function drawSyncing(dc) {
-        var text = Ui.loadResource(Rez.Strings.syncing);
         var textColor = Gfx.COLOR_WHITE;
         if (mSyncBlinkerCount > 10) {
             textColor = Gfx.COLOR_BLUE;
         }
+        // 20 means 10 ticks on, 10 ticks off
         mSyncBlinkerCount = (mSyncBlinkerCount + 1) % 20;
-        drawCenteredTextInRoundedBox(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
-                                     text, textColor, Gfx.COLOR_BLUE,
+        var lines = [Ui.loadResource(Rez.Strings.syncing)];
+        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+                                     lines, textColor, Gfx.COLOR_BLUE,
                                      BOX_MARGIN, BOX_RADIUS);
     }
 
     hidden function drawReady(dc) {
-        var text = Ui.loadResource(Rez.Strings.ready);
-        drawCenteredTextInRoundedBox(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
-                                     text, Gfx.COLOR_WHITE, Gfx.COLOR_GREEN,
+        var lines = [Ui.loadResource(Rez.Strings.ready)];
+        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+                                     lines, Gfx.COLOR_WHITE, Gfx.COLOR_GREEN,
+                                     BOX_MARGIN, BOX_RADIUS);
+
+
+    }
+
+    hidden function drawPhoneNotConnected(dc) {
+        var lines = [Ui.loadResource(Rez.Strings.phone_not_connected0),
+                     Ui.loadResource(Rez.Strings.phone_not_connected1)];
+        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+                                     lines, Gfx.COLOR_WHITE, Gfx.COLOR_RED,
                                      BOX_MARGIN, BOX_RADIUS);
     }
 
@@ -127,8 +154,7 @@ class hU2View extends Ui.View {
             text = "Press Button on Hue";
             drawCenteredText(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM, text);
         } else if (state == app.AS_PHONE_NOT_CONNECTED) {
-            text = "Phone Not Connected";
-            drawCenteredText(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM, text);
+            drawPhoneNotConnected(dc);
         } else if (state == app.AS_SYNCING) {
             drawSyncing(dc);
         } else if (state == app.AS_READY) {
