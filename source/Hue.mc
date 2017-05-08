@@ -220,7 +220,12 @@ module Hue {
         }
 
         function setBrightness(light, brightness) {
-            changeState(light, null, { "bri" => brightness });
+            if (brightness > 254) {
+                brightness = 254;
+            } else if (brightness < 0) {
+                brightness = 0;
+            }
+            changeState(light, null, { "bri" => brightness, "on" => true });
         }
 
         // Params:

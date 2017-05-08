@@ -1,6 +1,7 @@
 using Toybox.Application;
-using Toybox.WatchUi as Ui;
 using Toybox.Graphics as Gfx;
+using Toybox.Math;
+using Toybox.WatchUi as Ui;
 using Toybox.System;
 
 class LightView extends Ui.View {
@@ -58,11 +59,23 @@ class LightView extends Ui.View {
 
         if (mBlinkerOn) {
             dc.setColor(Gfx.COLOR_YELLOW, Gfx.COLOR_TRANSPARENT);
-            dc.fillCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 10, 30);
+            dc.fillCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 20, 40);
+
+            if (!light.getBusy()) {
+                var pctFont = Gfx.FONT_SMALL;
+                var pctBrightness = Math.round((light.getBrightness().toFloat() / 254) * 100).toNumber();
+                var pctText = pctBrightness.toString() + "%";
+                var pctDim = dc.getTextDimensions(pctText, pctFont);
+
+                dc.setColor(Gfx.COLOR_WHITE, Gfx.COLOR_TRANSPARENT);
+                dc.drawText(dc.getWidth() / 2,
+                            (dc.getHeight() - pctDim[1]) / 2 + 20,
+                            pctFont, pctText, Gfx.TEXT_JUSTIFY_CENTER);
+            }
         } else {
             dc.setColor(Gfx.COLOR_DK_GRAY, Gfx.COLOR_TRANSPARENT);
             dc.setPenWidth(3);
-            dc.drawCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 10, 30);
+            dc.drawCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 20, 40);
         }
 
     }
