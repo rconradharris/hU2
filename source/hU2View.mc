@@ -23,19 +23,57 @@ class hU2View extends Ui.View {
         dc.drawText(dc.getWidth() / 2, y, font, text, Gfx.TEXT_JUSTIFY_CENTER);
         return dim[1];
     }
+
+    hidden function drawLogo(dc, y) {
+        // Draw colorized logo
+        var logoFont = Gfx.FONT_MEDIUM;
+        var letters = ["h", "U", "2"];
+        var letterWidths = new [letters.size()];
+        var logoHeight = 0;
+        var logoWidth = 0;
+
+        // Compute width and height of logo
+        for (var i=0; i < letters.size(); i++) {
+            var letterDim = dc.getTextDimensions(letters[i], logoFont);
+            if (letterDim[1] > logoHeight) {
+                logoHeight = letterDim[1];
+            }
+            letterWidths[i] = letterDim[0];
+            logoWidth += letterDim[0];
+        }
+
+        // Draw the logo
+        var logoX = (dc.getWidth() - logoWidth) / 2;
+        var fgColors = [Gfx.COLOR_BLACK, Gfx.COLOR_WHITE, Gfx.COLOR_BLACK];
+        var bgColors = [Gfx.COLOR_BLUE, Gfx.COLOR_RED, Gfx.COLOR_GREEN];
+
+        for (var i=0; i < letters.size(); i++) {
+
+            dc.setColor(fgColors[i], bgColors[i]);
+            dc.drawText(logoX, y, logoFont, letters[i], Gfx.TEXT_JUSTIFY_LEFT);
+
+            logoX += letterWidths[i];
+        }
+
+        return logoHeight;
+    }
+
     // Update the view
     function onUpdate(dc) {
         // Call the parent onUpdate function to redraw the layout
         View.onUpdate(dc);
 
-        dc.clear();
         dc.setColor(Gfx.COLOR_WHITE, Gfx.COLOR_BLACK);
+        dc.clear();
 
         var y = 5;
 
-        y += drawCenteredText(dc, y, Gfx.FONT_TINY, Ui.loadResource(Rez.Strings.AppName));
+        y += drawLogo(dc, y);
+
+        dc.setColor(Gfx.COLOR_DK_GRAY, Gfx.COLOR_BLACK);
         y += drawCenteredText(dc, y, Gfx.FONT_TINY, Ui.loadResource(Rez.Strings.AppDescription));
 
+        dc.setColor(Gfx.COLOR_WHITE, Gfx.COLOR_BLACK);
         var text = "-";
         var app = Application.getApp();
         var state = app.getState();
