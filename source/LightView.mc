@@ -57,7 +57,20 @@ class LightView extends Ui.View {
             mBlinkerOn = false;
         }
 
-        if (mBlinkerOn) {
+        if (!light.getReachable()) {
+            dc.setColor(Gfx.COLOR_RED, Gfx.COLOR_TRANSPARENT);
+            dc.setPenWidth(3);
+            dc.drawCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 20, 40);
+
+            var unreachableFont = Gfx.FONT_SMALL;
+            var unreachableText = Ui.loadResource(Rez.Strings.unreachable);
+            var unreachableDim = dc.getTextDimensions(unreachableText, unreachableFont);
+
+            dc.setColor(Gfx.COLOR_RED, Gfx.COLOR_TRANSPARENT);
+            dc.drawText(dc.getWidth() / 2,
+                        (dc.getHeight() - unreachableDim[1]) / 2 + 20,
+                        unreachableFont, unreachableText, Gfx.TEXT_JUSTIFY_CENTER);
+        } else if (mBlinkerOn) {
             dc.setColor(Gfx.COLOR_YELLOW, Gfx.COLOR_TRANSPARENT);
             dc.fillCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 20, 40);
 
