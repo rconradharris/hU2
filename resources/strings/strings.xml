@@ -5,6 +5,8 @@
     <string id="all_off">All Off</string>
     <string id="all_on">All On</string>
     <string id="brightness">Brightness</string>
+    <string id="ready">Ready</string>
     <string id="reset">Reset</string>
+    <string id="syncing">Syncing</string>
     <string id="unreachable">Unreachable</string>
 </strings>

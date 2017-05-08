@@ -16,6 +16,9 @@ class hU2App extends Application.AppBase {
         AS_READY
     }
 
+    hidden const BLINKER_TIMER_MS = 100;
+    hidden const STATE_TIMER_MS = 3000;
+
     hidden var mState =  AS_NO_BRIDGE;
     hidden var mBridge = null;
     hidden var mUsername = null;
@@ -48,7 +51,7 @@ class hU2App extends Application.AppBase {
 
     function blinkerUp() {
         if (mBlinkerSemaphore == 0) {
-            mBlinkerTimer.start(method(:onBlink), 100, true);
+            mBlinkerTimer.start(method(:onBlink), BLINKER_TIMER_MS, true);
         }
         mBlinkerSemaphore++;
     }
@@ -70,8 +73,17 @@ class hU2App extends Application.AppBase {
         }
     }
 
+    hidden function sync() {
+        blinkerUp();
+        setState(AS_SYNCING);
+        mHueClient.sync(method(:onSync));
+    }
+
+
     // onStart() is called on application start up
     function onStart(state) {
+        mBlinkerTimer = new Timer.Timer();
+
         var bridgeIP = PropertyStore.get("bridgeIP");
         if (bridgeIP != null) {
             setState(AS_NO_USERNAME);
@@ -80,16 +92,16 @@ class hU2App extends Application.AppBase {
             if (username != null) {
                 mHueClient = new Hue.Client(mBridge, username);
                 if (System.getDeviceSettings().phoneConnected) {
-                    setState(AS_SYNCING);
-                    mHueClient.sync(method(:onSync));
+                    sync();
                 } else {
                     setState(AS_PHONE_NOT_CONNECTED);
                 }
             }
         }
-        mBlinkerTimer = new Timer.Timer();
+
+        // Start the state timer...
         mStateTimer = new Timer.Timer();
-        mStateTimer.start(method(:onStateTick), 3000, true);
+        mStateTimer.start(method(:onStateTick), STATE_TIMER_MS, true);
         onStateTick();
     }
 
@@ -110,8 +122,7 @@ class hU2App extends Application.AppBase {
             PropertyStore.set("username", username);
             mHueClient = new Hue.Client(mBridge, username);
             if (System.getDeviceSettings().phoneConnected) {
-                setState(AS_SYNCING);
-                mHueClient.sync(method(:onSync));
+                sync();
             } else {
                 setState(AS_PHONE_NOT_CONNECTED);
             }
@@ -120,6 +131,7 @@ class hU2App extends Application.AppBase {
 
     function onSync(success) {
         if (success) {
+            blinkerDown();
             setState(AS_READY);
         }
     }

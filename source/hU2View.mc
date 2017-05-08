@@ -3,6 +3,11 @@ using Toybox.Graphics as Gfx;
 using Toybox.System;
 
 class hU2View extends Ui.View {
+    hidden const BOX_MARGIN = 30;
+    hidden const BOX_RADIUS = 10;
+
+    // Used to blink 1 out of every 10 timer ticks
+    hidden var mSyncBlinkerCount = 0;
 
     function initialize() {
         View.initialize();
@@ -22,6 +27,22 @@ class hU2View extends Ui.View {
         var dim = dc.getTextDimensions(text, font);
         dc.drawText(dc.getWidth() / 2, y, font, text, Gfx.TEXT_JUSTIFY_CENTER);
         return dim[1];
+    }
+
+    hidden function drawCenteredTextInRoundedBox(dc, y, font, text, textColor, boxColor, margin, radius) {
+        var dim = dc.getTextDimensions(text, font);
+        var width = dim[0] + margin;
+        var height = dim[1] + margin;
+        var boxX = (dc.getWidth() - width) / 2;
+        var boxY = y - (margin / 2);
+
+        // Draw box
+        dc.setColor(boxColor, Gfx.COLOR_TRANSPARENT);
+        dc.fillRoundedRectangle(boxX, boxY, width, height, radius);
+
+        // Draw text
+        dc.setColor(textColor, Gfx.COLOR_TRANSPARENT);
+        dc.drawText(dc.getWidth() / 2, y, font, text, Gfx.TEXT_JUSTIFY_CENTER);
     }
 
     hidden function drawLogo(dc, y) {
@@ -58,6 +79,25 @@ class hU2View extends Ui.View {
         return logoHeight;
     }
 
+    hidden function drawSyncing(dc) {
+        var text = Ui.loadResource(Rez.Strings.syncing);
+        var textColor = Gfx.COLOR_WHITE;
+        if (mSyncBlinkerCount > 10) {
+            textColor = Gfx.COLOR_BLUE;
+        }
+        mSyncBlinkerCount = (mSyncBlinkerCount + 1) % 20;
+        drawCenteredTextInRoundedBox(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+                                     text, textColor, Gfx.COLOR_BLUE,
+                                     BOX_MARGIN, BOX_RADIUS);
+    }
+
+    hidden function drawReady(dc) {
+        var text = Ui.loadResource(Rez.Strings.ready);
+        drawCenteredTextInRoundedBox(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+                                     text, Gfx.COLOR_WHITE, Gfx.COLOR_GREEN,
+                                     BOX_MARGIN, BOX_RADIUS);
+    }
+
     // Update the view
     function onUpdate(dc) {
         // Call the parent onUpdate function to redraw the layout
@@ -79,18 +119,21 @@ class hU2View extends Ui.View {
         var state = app.getState();
         if (state == app.AS_NO_BRIDGE) {
             text = "No Bridge";
+            drawCenteredText(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM, text);
         } else if (state == app.AS_DISCOVERING_BRIDGE) {
             text = "Discovering Bridge";
+            drawCenteredText(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM, text);
         } else if (state == app.AS_NO_USERNAME || state == app.AS_REGISTERING) {
             text = "Press Button on Hue";
+            drawCenteredText(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM, text);
         } else if (state == app.AS_PHONE_NOT_CONNECTED) {
             text = "Phone Not Connected";
+            drawCenteredText(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM, text);
         } else if (state == app.AS_SYNCING) {
-            text = "Syncing";
+            drawSyncing(dc);
         } else if (state == app.AS_READY) {
-            text = "Ready";
+            drawReady(dc);
         }
-        y += drawCenteredText(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM, text);
     }
 
     // Called when this View is removed from the screen. Save the

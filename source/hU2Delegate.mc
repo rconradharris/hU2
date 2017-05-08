@@ -2,7 +2,6 @@ using Toybox.Application;
 using Toybox.Lang;
 using Toybox.WatchUi as Ui;
 
-
 class SettingsMenuInputDelegate extends Ui.MenuInputDelegate {
     function initialize() {
         Ui.MenuInputDelegate.initialize();
