@@ -64,11 +64,8 @@ class LightView extends Ui.View {
 
             var unreachableFont = Gfx.FONT_SMALL;
             var unreachableText = Ui.loadResource(Rez.Strings.unreachable);
-            var unreachableDim = dc.getTextDimensions(unreachableText, unreachableFont);
-
             dc.setColor(Gfx.COLOR_RED, Gfx.COLOR_TRANSPARENT);
-            dc.drawText(dc.getWidth() / 2,
-                        (dc.getHeight() - unreachableDim[1]) / 2 + 20,
+            dc.drawText(dc.getWidth() / 2, y + textDim[1],
                         unreachableFont, unreachableText, Gfx.TEXT_JUSTIFY_CENTER);
         } else if (mBlinkerOn) {
             dc.setColor(Gfx.COLOR_YELLOW, Gfx.COLOR_TRANSPARENT);
