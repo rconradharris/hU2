@@ -202,11 +202,16 @@ module Hue {
         }
 
         function turnOnAllLights(on) {
-            // FIXME: Re-work this to use a single Group 0 PUT
+            var url = "/groups/0/action";
+            var params = { "on" => on };
+            doRequest(Communications.HTTP_REQUEST_METHOD_PUT, url, params, null);
+
+            // NOTE: We have no idea whether a group action was successful for
+            // any given light; so, just be optimistic and change the state
             var lights = getLights();
             for (var i=0; i < lights.size(); i++) {
                 var light = lights[i];
-                turnOnLight(light, on);
+                light.updateState(params);
             }
         }
 
