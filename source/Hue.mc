@@ -76,11 +76,7 @@ module Hue {
                 for (var i=0; i < lightIds.size(); i++) {
                     var lightId = lightIds[i];
                     var ld = data[lightId];
-                    var st = ld["state"];
-                    var light = new Light(lightId, ld["name"],
-                                         st["on"],
-                                         st["bri"],
-                                         st["reachable"]);
+                    var light = new Light(lightId, ld["name"], ld["state"]);
                     mClient.addLight(light);
                 }
             }
@@ -103,19 +99,13 @@ module Hue {
     class Light {
         hidden var mId = null;
         hidden var mName = null;
-
-        hidden var mOn = null;
-        hidden var mBrightness = null;
-        hidden var mReachable = null;
-
+        hidden var mState = null;
         hidden var mBusy = false;
 
-        function initialize(id, name, on, brightness, reachable) {
+        function initialize(id, name, state) {
             mId = id;
             mName = name;
-            mOn = on;
-            mBrightness = brightness;
-            mReachable = reachable;
+            mState = state;
         }
 
         function getId() {
@@ -126,20 +116,25 @@ module Hue {
             return mName;
         }
 
-        function getOn() {
-            return mOn;
+        function updateState(state) {
+            var keys = state.keys();
+            for (var i=0; i < state.size(); i++) {
+                var key = keys[i];
+                var value = state[key];
+                mState[key] = value;
+            }
         }
 
-        function setOn(on) {
-            mOn = on;
+        function getOn() {
+            return mState["on"];
+        }
+
+        function getBrightness() {
+            return mState["bri"];
         }
 
         function getReachable() {
-            return mReachable();
-        }
-
-        function setReachable(reachable) {
-            mReachable = reachable;
+            return mState["reachable"];
         }
 
         function setBusy(busy) {
@@ -148,14 +143,6 @@ module Hue {
 
         function getBusy() {
             return mBusy;
-        }
-
-        function setBrightness(brightness) {
-            mBrightness = brightness;
-        }
-
-        function getBrightness() {
-            return mBrightness;
         }
     }
 
@@ -265,38 +252,26 @@ module Hue {
             Application.getApp().blinkerDown();
             mLight.setBusy(false);
             if (responseCode == 200) {
-                // Build response url to symbol lookup table so we later know
-                // which attribute to update on the Light object
+                var updatedState = {};
+
                 var lightId = mLight.getId();
-                var lookup = {};
                 var keys = mParams.keys();
                 for (var i=0; i < mParams.size(); i++) {
                     var param = keys[i];
                     var url = Lang.format("/lights/$1$/state/$2$", [lightId, param]);
-                    var attrSym = null;
-                    if (param.equals("on")) {
-                        attrSym = :on;
-                    } else if (param.equals("bri")) {
-                        attrSym = :bri;
-                    }
-                    lookup[url] = attrSym;
-                }
 
-                for (var i=0; i < data.size(); i++) {
-                    if (data[i].hasKey("success")) {
-                        var stateItemDict = data[i]["success"];
-                        var url = stateItemDict.keys()[0];
-                        var value = stateItemDict[url];
-                        var attrSym = lookup[url];
-                        if (attrSym != null) {
-                            if (attrSym == :on) {
-                                mLight.setOn(value);
-                            } if (attrSym == :bri) {
-                                mLight.setBrightness(value);
+                    for (var j=0; j < data.size(); j++) {
+                        var responseItem = data[j];
+                        if (responseItem.hasKey("success")) {
+                            var stateDict = responseItem["success"];
+                            if (stateDict.hasKey(url)) {
+                                var updatedValue = stateDict[url];
+                                updatedState[param] = updatedValue;
                             }
                         }
-                    }
-                }
+                    } // end for each response item
+                } // end for each param
+                mLight.updateState(updatedState);
             }
             if (mCallback != null) {
                 mCallback.invoke();
