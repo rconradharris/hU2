@@ -108,6 +108,7 @@ class hU2App extends Application.AppBase {
     }
 
     function onDiscoverBridgeIP(bridgeIP) {
+        blinkerDown();
         if (bridgeIP == null) {
             setState(AS_NO_BRIDGE);
         } else {
@@ -146,6 +147,7 @@ class hU2App extends Application.AppBase {
 
         if (state == AS_INIT) {
             setState(AS_DISCOVERING_BRIDGE);
+            blinkerUp();
             Hue.discoverBridgeIP(method(:onDiscoverBridgeIP));
         } else if (state == AS_NO_USERNAME) {
             setState(AS_REGISTERING);

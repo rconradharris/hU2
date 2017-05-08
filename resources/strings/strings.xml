@@ -5,10 +5,17 @@
     <string id="all_off">All Off</string>
     <string id="all_on">All On</string>
     <string id="brightness">Brightness</string>
+    <string id="discovering_bridge0">Discovering</string>
+    <string id="discovering_bridge1">Hue Bridge...</string>
+    <string id="init">Loading</string>
+    <string id="no_bridge0">No Hue Bridge</string>
+    <string id="no_bridge1">Detected</string>
     <string id="phone_not_connected0">Phone</string>
     <string id="phone_not_connected1">Not Connected</string>
+    <string id="press_button0">Press Button</string>
+    <string id="press_button1">on Hue Bridge</string>
     <string id="ready">Ready</string>
     <string id="reset">Reset</string>
-    <string id="syncing">Syncing</string>
+    <string id="syncing">Syncing...</string>
     <string id="unreachable">Unreachable</string>
 </strings>

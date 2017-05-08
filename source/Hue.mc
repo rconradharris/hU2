@@ -90,7 +90,6 @@ module Hue {
                             :headers => { "Content-Type" => Communications.REQUEST_CONTENT_TYPE_JSON },
                             :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON };
             var url = "https://www.meethue.com/api/nupnp";
-            System.println(url);
             var callbackWrapper = new _DiscoverBridgeCallback(callback);
             Communications.makeWebRequest(url, null, options, callbackWrapper.method(:onResponse));
     }

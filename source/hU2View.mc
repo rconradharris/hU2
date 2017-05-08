@@ -7,7 +7,7 @@ class hU2View extends Ui.View {
     hidden const BOX_RADIUS = 10;
 
     // Used to blink 1 out of every 10 timer ticks
-    hidden var mSyncBlinkerCount = 0;
+    hidden var mBlinkCount = 0;
 
     function initialize() {
         View.initialize();
@@ -97,11 +97,11 @@ class hU2View extends Ui.View {
 
     hidden function drawSyncing(dc) {
         var textColor = Gfx.COLOR_WHITE;
-        if (mSyncBlinkerCount > 10) {
+        if (mBlinkCount > 10) {
             textColor = Gfx.COLOR_BLUE;
         }
         // 20 means 10 ticks on, 10 ticks off
-        mSyncBlinkerCount = (mSyncBlinkerCount + 1) % 20;
+        mBlinkCount = (mBlinkCount + 1) % 20;
         var lines = [Ui.loadResource(Rez.Strings.syncing)];
         drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
                                      lines, textColor, Gfx.COLOR_BLUE,
@@ -125,6 +125,44 @@ class hU2View extends Ui.View {
                                      BOX_MARGIN, BOX_RADIUS);
     }
 
+    hidden function drawPressButtonOnHue(dc) {
+        var lines = [Ui.loadResource(Rez.Strings.press_button0),
+                     Ui.loadResource(Rez.Strings.press_button1)];
+        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+                                     lines, Gfx.COLOR_WHITE, Gfx.COLOR_BLUE,
+                                     BOX_MARGIN, BOX_RADIUS);
+
+    }
+
+    hidden function drawDiscoveringBridge(dc) {
+        var textColor = Gfx.COLOR_WHITE;
+        if (mBlinkCount > 10) {
+            textColor = Gfx.COLOR_BLUE;
+        }
+        // 20 means 10 ticks on, 10 ticks off
+        mBlinkCount = (mBlinkCount + 1) % 20;
+        var lines = [Ui.loadResource(Rez.Strings.discovering_bridge0),
+                     Ui.loadResource(Rez.Strings.discovering_bridge1)];
+        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+                                     lines, textColor, Gfx.COLOR_BLUE,
+                                     BOX_MARGIN, BOX_RADIUS);
+    }
+
+    hidden function drawNoBridge(dc) {
+        var lines = [Ui.loadResource(Rez.Strings.no_bridge0),
+                     Ui.loadResource(Rez.Strings.no_bridge1)];
+        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+                                     lines, Gfx.COLOR_WHITE, Gfx.COLOR_RED,
+                                     BOX_MARGIN, BOX_RADIUS);
+    }
+
+    hidden function drawInit(dc) {
+        var lines = [Ui.loadResource(Rez.Strings.init)];
+        drawBoxText(dc, dc.getWidth() / 2, dc.getHeight() / 2, Gfx.FONT_MEDIUM,
+                                     lines, Gfx.COLOR_WHITE, Gfx.COLOR_BLUE,
+                                     BOX_MARGIN, BOX_RADIUS);
+    }
+
     // Update the view
     function onUpdate(dc) {
         // Call the parent onUpdate function to redraw the layout
@@ -144,15 +182,14 @@ class hU2View extends Ui.View {
         var text = "-";
         var app = Application.getApp();
         var state = app.getState();
-        if (state == app.AS_NO_BRIDGE) {
-            text = "No Bridge";
-            drawCenteredText(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM, text);
+        if (state == app.AS_INIT) {
+            drawInit(dc);
+        } else if (state == app.AS_NO_BRIDGE) {
+            drawNoBridge(dc);
         } else if (state == app.AS_DISCOVERING_BRIDGE) {
-            text = "Discovering Bridge";
-            drawCenteredText(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM, text);
+            drawDiscoveringBridge(dc);
         } else if (state == app.AS_NO_USERNAME || state == app.AS_REGISTERING) {
-            text = "Press Button on Hue";
-            drawCenteredText(dc, dc.getHeight() / 2, Gfx.FONT_MEDIUM, text);
+            drawPressButtonOnHue(dc);
         } else if (state == app.AS_PHONE_NOT_CONNECTED) {
             drawPhoneNotConnected(dc);
         } else if (state == app.AS_SYNCING) {
