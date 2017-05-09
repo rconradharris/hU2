@@ -16,9 +16,7 @@ module Hue {
 
         function onResponse(responseCode, data) {
             var bridgeIP = null;
-            System.println(responseCode);
             if (responseCode == 200) {
-                System.println(data);
                 if (data has :size && data.size() > 0) {
                     System.println(data[0]);
                     if (data[0] has :hasKey && data[0].hasKey("internalipaddress")) {
@@ -27,7 +25,6 @@ module Hue {
                     }
                 }
             }
-            System.println("invoking with bridgeIP " + bridgeIP);
             mCallback.invoke(bridgeIP);
         }
     }

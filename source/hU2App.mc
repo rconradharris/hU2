@@ -29,6 +29,7 @@ class hU2App extends Application.AppBase {
     hidden var mBlinkerTimer = null;
     hidden var mStateTimer = null;
     hidden var mBlinkerSemaphore = 0;
+    hidden var mDiscoverAttemptsLeft = 5;
 
     function initialize() {
         AppBase.initialize();
@@ -108,10 +109,16 @@ class hU2App extends Application.AppBase {
     }
 
     function onDiscoverBridgeIP(bridgeIP) {
-        blinkerDown();
         if (bridgeIP == null) {
-            setState(AS_NO_BRIDGE);
+            mDiscoverAttemptsLeft--;
+            if (mDiscoverAttemptsLeft > 0) {
+                Hue.discoverBridgeIP(method(:onDiscoverBridgeIP));
+            } else {
+                blinkerDown();
+                setState(AS_NO_BRIDGE);
+            }
         } else {
+            blinkerDown();
             setState(AS_NO_USERNAME);
             PropertyStore.set("bridgeIP", bridgeIP);
             mBridge = new Hue.Bridge(bridgeIP);
