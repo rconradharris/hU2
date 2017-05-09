@@ -46,6 +46,13 @@ class LightView extends Ui.View {
         var textDim = dc.getTextDimensions(text, font);
         var x = (dc.getWidth() - textDim[0]) / 2;
         var y = 15;
+
+        // HACK: Nasty hack to make the unreachable label look okay on
+        // Vivoactive
+        if (dc.getWidth() == 205 && dc.getHeight() == 148) {
+            y = 0;
+        }
+
         dc.drawText(x, y, font, text, Gfx.TEXT_JUSTIFY_LEFT);
 
         if (light.getBusy()) {
