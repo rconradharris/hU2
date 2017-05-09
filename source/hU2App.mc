@@ -154,10 +154,8 @@ class hU2App extends Application.AppBase {
         }
     }
 
-    function onRegister(username) {
-        if (username == null) {
-            setState(AS_NO_USERNAME);
-        } else {
+    function onRegister(status, username) {
+        if (status == Hue.REGISTRATION_SUCCESS) {
             PropertyStore.set("username", username);
             mHueClient = new Hue.Client(mBridge, username);
             if (System.getDeviceSettings().phoneConnected) {
@@ -165,6 +163,10 @@ class hU2App extends Application.AppBase {
             } else {
                 setState(AS_PHONE_NOT_CONNECTED);
             }
+        } else if (status == Hue.REGISTRATION_WAITING) {
+            setState(AS_NO_USERNAME);
+        } else if (status == Hue.REGISTRATION_FAILED) {
+            setState(AS_NO_BRIDGE);
         }
     }
 

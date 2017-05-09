@@ -5,6 +5,12 @@ using Toybox.System;
 using Toybox.WatchUi as Ui;
 
 module Hue {
+    enum {
+        REGISTRATION_FAILED,
+        REGISTRATION_WAITING, // For button press
+        REGISTRATION_SUCCESS
+    }
+
     hidden const REQUEST_LOGGING = false;
     hidden var mRequestId = 0;
 
@@ -27,7 +33,7 @@ module Hue {
     }
 
     // Wrapper to allow logging...
-    hidden function makeWebRequest(url, params, options, callback) {
+    function makeWebRequest(url, params, options, callback) {
         if (REQUEST_LOGGING) {
             var info = { "url" => url, "params" => params };
             System.println(Lang.format("request $1$: $2$", [mRequestId, info]));
@@ -63,15 +69,33 @@ module Hue {
         hidden var mCallback = null;
 
         function onResponse(responseCode, data) {
+            var status = REGISTRATION_FAILED;
+
             var username = null;
             if (responseCode == 200) {
                 if (data has :size && data.size() > 0) {
-                    if (data[0] has :hasKey && data[0].hasKey("success")) {
-                        username = data[0]["success"]["username"];
+                    var payload = data[0];
+                    if (payload has :hasKey) {
+                        if (payload.hasKey("success")) {
+                            status = REGISTRATION_SUCCESS;
+                            username = payload["success"]["username"];
+                        } else if (payload.hasKey("error")) {
+                            if (payload["error"].hasKey("type")) {
+                                if (payload["error"]["type"] == 101) {
+                                    // Hue responded back saying that button
+                                    // was not pressed
+                                    status = REGISTRATION_WAITING;
+                                }
+                            }
+                        }
                     }
                 }
+            } else if (responseCode < 0 && responseCode > -400) {
+                // Retry on errors like NETWORK TIMEOUT and various BLE errors
+                status = REGISTRATION_WAITING;
             }
-            mCallback.invoke(username);
+
+            mCallback.invoke(status, username);
         }
 
 
@@ -111,7 +135,7 @@ module Hue {
                             :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON };
             var url = "https://www.meethue.com/api/nupnp";
             var callbackWrapper = new _DiscoverBridgeCallback(callback);
-            makeWebRequest(url, null, options, callbackWrapper.method(:onResponse));
+            Hue.makeWebRequest(url, null, options, callbackWrapper.method(:onResponse));
     }
 
 
@@ -177,7 +201,7 @@ module Hue {
                             :headers => { "Content-Type" => Communications.REQUEST_CONTENT_TYPE_JSON },
                             :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON };
             var fullUrl = Lang.format("http://$1$/api$2$", [mIPAddress, url]);
-            makeWebRequest(fullUrl, params, options, callback);
+            Hue.makeWebRequest(fullUrl, params, options, callback);
         }
 
         function register(callback) {
