@@ -5,6 +5,37 @@ using Toybox.System;
 using Toybox.WatchUi as Ui;
 
 module Hue {
+    hidden const REQUEST_LOGGING = false;
+    hidden var mRequestId = 0;
+
+    class _RequestLoggingCallback {
+        hidden var mCallback = null;
+        hidden var mRequestId = null;
+
+        function initialize(requestId, callback) {
+            mRequestId = requestId;
+            mCallback = callback;
+        }
+
+        function onResponse(responseCode, data) {
+            var info = { "responseCode" => responseCode, "data" => data };
+            System.println(Lang.format("response $1$: $2$", [mRequestId, info]));
+            if (mCallback != null) {
+                mCallback.invoke(responseCode, data);
+            }
+        }
+    }
+
+    // Wrapper to allow logging...
+    hidden function makeWebRequest(url, params, options, callback) {
+        if (REQUEST_LOGGING) {
+            var info = { "url" => url, "params" => params };
+            System.println(Lang.format("request $1$: $2$", [mRequestId, info]));
+            callback = new _RequestLoggingCallback(mRequestId, callback).method(:onResponse);
+            mRequestId++;
+        }
+        Communications.makeWebRequest(url, params, options, callback);
+    }
 
     // Hack to allow us to build a callback closure
     class _DiscoverBridgeCallback {
@@ -18,9 +49,7 @@ module Hue {
             var bridgeIP = null;
             if (responseCode == 200) {
                 if (data has :size && data.size() > 0) {
-                    System.println(data[0]);
                     if (data[0] has :hasKey && data[0].hasKey("internalipaddress")) {
-                        System.println(data[0]["internalipaddress"]);
                         bridgeIP = data[0]["internalipaddress"];
                     }
                 }
@@ -35,18 +64,13 @@ module Hue {
 
         function onResponse(responseCode, data) {
             var username = null;
-            System.println(responseCode);
             if (responseCode == 200) {
-                System.println(data);
                 if (data has :size && data.size() > 0) {
-                    System.println(data[0]);
                     if (data[0] has :hasKey && data[0].hasKey("success")) {
-                        System.println(data[0]["success"]);
                         username = data[0]["success"]["username"];
                     }
                 }
             }
-            System.println("invoking with username " + username);
             mCallback.invoke(username);
         }
 
@@ -87,7 +111,7 @@ module Hue {
                             :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON };
             var url = "https://www.meethue.com/api/nupnp";
             var callbackWrapper = new _DiscoverBridgeCallback(callback);
-            Communications.makeWebRequest(url, null, options, callbackWrapper.method(:onResponse));
+            makeWebRequest(url, null, options, callbackWrapper.method(:onResponse));
     }
 
 
@@ -153,8 +177,7 @@ module Hue {
                             :headers => { "Content-Type" => Communications.REQUEST_CONTENT_TYPE_JSON },
                             :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON };
             var fullUrl = Lang.format("http://$1$/api$2$", [mIPAddress, url]);
-            System.println(fullUrl);
-            Communications.makeWebRequest(fullUrl, params, options, callback);
+            makeWebRequest(fullUrl, params, options, callback);
         }
 
         function register(callback) {
