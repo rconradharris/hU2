@@ -1,0 +1,11 @@
+0.2
+===
+
+- Adding 'Hue Bridge IP' setting in Garmin Connect Mobile
+- Retry discover bridge commands
+
+
+0.1
+===
+
+- Initial release

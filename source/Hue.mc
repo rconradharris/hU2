@@ -81,7 +81,6 @@ module Hue {
         }
     }
 
-
     function discoverBridgeIP(callback) {
             var options = { :method => Communications.HTTP_REQUEST_METHOD_GET,
                             :headers => { "Content-Type" => Communications.REQUEST_CONTENT_TYPE_JSON },

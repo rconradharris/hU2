@@ -20,16 +20,22 @@ class hU2App extends Application.AppBase {
     hidden const BLINKER_TIMER_MS = 100;
     hidden const STATE_TIMER_MS = 3000;
 
+    // === START OF RESET NEEDED ===
+    //
+    // These fields need to be re-initialized in reset()
+
     hidden var mState =  AS_INIT;
     hidden var mBridge = null;
     hidden var mUsername = null;
     hidden var mHueClient = null;
     hidden var mSynced = false;
+    hidden var mDiscoverAttemptsLeft = 5;
+    hidden var mBlinkerSemaphore = 0;
+
+    // === END OF RESET NEEDED ===
 
     hidden var mBlinkerTimer = null;
     hidden var mStateTimer = null;
-    hidden var mBlinkerSemaphore = 0;
-    hidden var mDiscoverAttemptsLeft = 5;
 
     function initialize() {
         AppBase.initialize();
@@ -82,12 +88,28 @@ class hU2App extends Application.AppBase {
         mHueClient.sync(method(:onSync));
     }
 
-
-    // onStart() is called on application start up
-    function onStart(state) {
-        mBlinkerTimer = new Timer.Timer();
-
+    function onSettingsChanged() {
+        var sBridgeIP = PropertyStore.get("sBridgeIP");
         var bridgeIP = PropertyStore.get("bridgeIP");
+        if (!sBridgeIP.equals(bridgeIP)) {
+            reset();
+        }
+    }
+
+    hidden function tryInitBridge() {
+        var bridgeIP = null;
+
+        // Use bridgeIP if available (allows overriding if necessary)
+        var sBridgeIP = PropertyStore.get("sBridgeIP");
+        if (sBridgeIP.length() > 0) {
+            bridgeIP = sBridgeIP;
+        }
+
+        // Otherwise use any previously detected bridges
+        if (bridgeIP == null) {
+            bridgeIP = PropertyStore.get("bridgeIP");
+        }
+
         if (bridgeIP != null) {
             setState(AS_NO_USERNAME);
             mBridge = new Hue.Bridge(bridgeIP);
@@ -101,9 +123,16 @@ class hU2App extends Application.AppBase {
                 }
             }
         }
+    }
+
+    // onStart() is called on application start up
+    function onStart(state) {
+        mBlinkerTimer = new Timer.Timer();
+        mStateTimer = new Timer.Timer();
+
+        tryInitBridge();
 
         // Start the state timer...
-        mStateTimer = new Timer.Timer();
         mStateTimer.start(method(:onStateTick), STATE_TIMER_MS, true);
         onStateTick();
     }
@@ -194,10 +223,24 @@ class hU2App extends Application.AppBase {
 
     function reset() {
         PropertyStore.clear();
+
+        // === START OF RESET NEEDED ===
+        //
+        // These fields need to be re-initialized in reset()
+
         mState =  AS_INIT;
         mBridge = null;
         mUsername = null;
         mHueClient = null;
+        mSynced = false;
+        mDiscoverAttemptsLeft = 5;
+        mBlinkerSemaphore = 0;
 
+        // === END OF RESET NEEDED ===
+
+        // Make sure blinker is zero'd and stopped when we begin
+        mBlinkerTimer.stop();
+
+        tryInitBridge();
     }
 }
