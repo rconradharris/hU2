@@ -121,7 +121,8 @@ module Hue {
                 for (var i=0; i < lightIds.size(); i++) {
                     var lightId = lightIds[i];
                     var ld = data[lightId];
-                    var light = new Light(lightId, ld["name"], ld["state"]);
+                    var light = new Light(lightId, ld["name"]);
+                    light.updateState(ld["state"]);
                     mClient.addLight(light);
                 }
             }
@@ -140,15 +141,18 @@ module Hue {
 
 
     class Light {
+        // Loaded immediately from property store
         hidden var mId = null;
         hidden var mName = null;
-        hidden var mState = null;
+
+        // Loaded sometime after initialization (whenever the Hue API responds back)
+        hidden var mState = {};
+
         hidden var mBusy = false;
 
-        function initialize(id, name, state) {
+        function initialize(id, name) {
             mId = id;
             mName = name;
-            mState = state;
         }
 
         function getId() {
@@ -159,6 +163,14 @@ module Hue {
             return mName;
         }
 
+        function setBusy(busy) {
+            mBusy = busy;
+        }
+
+        function getBusy() {
+            return mBusy;
+        }
+
         function updateState(state) {
             var keys = state.keys();
             for (var i=0; i < state.size(); i++) {
@@ -166,6 +178,10 @@ module Hue {
                 var value = state[key];
                 mState[key] = value;
             }
+        }
+
+        function isStateAvailable() {
+            return mState.size() > 0;
         }
 
         function getOn() {
@@ -180,13 +196,6 @@ module Hue {
             return mState["reachable"];
         }
 
-        function setBusy(busy) {
-            mBusy = busy;
-        }
-
-        function getBusy() {
-            return mBusy;
-        }
     }
 
     class Bridge {
