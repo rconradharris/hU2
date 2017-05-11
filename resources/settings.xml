@@ -1,0 +1,5 @@
+<settings>
+    <setting propertyKey="@Properties.sBridgeIP" title="@Strings.bridge_ip">
+           <settingConfig type="alphaNumeric" required="false" />
+    </setting>
+</settings>

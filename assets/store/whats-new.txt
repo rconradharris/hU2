@@ -1,0 +1,12 @@
+0.2
+===
+
+- Reset confirmation dialog
+- Retry multiple times while attempting to discover Hue Bridge
+- Added Connect Mobile Setting for 'Bridge IP' in case bridge discover isn't
+  working
+
+0.1
+===
+
+- Initial release

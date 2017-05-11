@@ -1,0 +1,3 @@
+<properties>
+    <property id="sBridgeIP" type="string"></property>
+</properties>

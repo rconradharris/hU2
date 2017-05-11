@@ -19,10 +19,30 @@ class SettingsMenuInputDelegate extends Ui.MenuInputDelegate {
                 app.getHueClient().turnOnAllLights(true);
             }
         } else if (item == :reset) {
-            app.reset();
+            Ui.pushView(new Ui.Confirmation.initialize(Ui.loadResource(Rez.Strings.reset) + "?"),
+                        new ResetConfirmationDelegate(),
+                        Ui.SLIDE_IMMEDIATE);
+
         }
     }
 }
+
+
+class ResetConfirmationDelegate extends Ui.ConfirmationDelegate {
+    function initialize() {
+        Ui.ConfirmationDelegate.initialize();
+    }
+
+    function onResponse(response) {
+        var app = Application.getApp();
+        app.hapticFeedback();
+        if (response == Ui.CONFIRM_YES) {
+            app.reset();
+            Ui.popView(Ui.SLIDE_IMMEDIATE);
+        }
+    }
+}
+
 
 class hU2Delegate extends Ui.BehaviorDelegate {
     function initialize() {
