@@ -13,7 +13,8 @@ class hU2App extends Application.AppBase {
         AS_NO_USERNAME,
         AS_REGISTERING,
         AS_PHONE_NOT_CONNECTED,
-        AS_SYNCING,
+        AS_FETCHING,                // First sync, we don't have stored lights we can show
+        AS_UPDATING,                // Subsequent sync, we have cached lights, so show them
         AS_READY
     }
 
@@ -83,8 +84,13 @@ class hU2App extends Application.AppBase {
     }
 
     hidden function sync() {
-        blinkerUp();
-        setState(AS_SYNCING);
+        var count = mHueClient.getLights().size();
+        if (count > 0) {
+            setState(AS_UPDATING);
+        } else {
+            blinkerUp();
+            setState(AS_FETCHING);
+        }
         mHueClient.sync(method(:onSync));
     }
 
@@ -123,6 +129,10 @@ class hU2App extends Application.AppBase {
                 }
             }
         }
+    }
+
+    function areActionsAllowed() {
+        return (mState == AS_UPDATING || mState == AS_READY);
     }
 
     // onStart() is called on application start up
@@ -172,9 +182,12 @@ class hU2App extends Application.AppBase {
 
     function onSync(success) {
         if (success) {
-            blinkerDown();
+            if (mState == AS_FETCHING) {
+                blinkerDown();
+            }
             setState(AS_READY);
             mSynced = true;
+            Ui.requestUpdate();
         }
     }
 

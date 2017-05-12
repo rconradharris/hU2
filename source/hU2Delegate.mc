@@ -70,7 +70,7 @@ class hU2Delegate extends Ui.BehaviorDelegate {
 
     function onSelect() {
         var app = Application.getApp();
-        if (app.getState() == app.AS_READY) {
+        if (app.areActionsAllowed()) {
             app.hapticFeedback();
             Ui.pushView(new LightView(0), new LightDelegate(0), Ui.SLIDE_UP);
         }

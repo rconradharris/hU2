@@ -199,9 +199,9 @@ class hU2View extends Ui.View {
             drawPressButtonOnHue(dc, boxY);
         } else if (state == app.AS_PHONE_NOT_CONNECTED) {
             drawPhoneNotConnected(dc, boxY);
-        } else if (state == app.AS_SYNCING) {
+        } else if (state == app.AS_FETCHING) {
             drawSyncing(dc, boxY);
-        } else if (state == app.AS_READY) {
+        } else if (app.areActionsAllowed()) {
             drawReady(dc, boxY);
         }
     }
