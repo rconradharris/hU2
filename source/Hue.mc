@@ -337,30 +337,28 @@ module Hue {
             }
         }
 
-        function turnOnLight(light, on) {
-            changeState(light, null, { "on" => on });
+        function turnOnLight(light, on, callback) {
+            changeState(light, { "on" => on }, callback);
         }
 
-        function toggleLight(light) {
-            turnOnLight(light, !light.getOn());
+        function toggleLight(light, callback) {
+            turnOnLight(light, !light.getOn(), callback);
         }
 
-        function setBrightness(light, brightness) {
+        function setBrightness(light, brightness, callback) {
             if (brightness > 254) {
                 brightness = 254;
             } else if (brightness < 0) {
                 brightness = 0;
             }
-            changeState(light, null, { "bri" => brightness, "on" => true });
+            changeState(light, { "bri" => brightness, "on" => true }, callback);
         }
 
         // Params:
         //      "on"    : true|false
         //      "bri"   : 0..254
-        hidden function changeState(light, callback, params) {
-            Application.getApp().blinkerUp();
-            light.setBusy(true);
-            var callbackWrapper = new _ChangeLightStateCallback(light, callback, params);
+        hidden function changeState(light, params, callback) {
+            var callbackWrapper = new _ChangeLightStateCallback(light, params, callback);
             var url = Lang.format("/lights/$1$/state", [light.getId()]);
             doRequest(Communications.HTTP_REQUEST_METHOD_PUT, url, params,
                       callbackWrapper.method(:onResponse));
@@ -370,18 +368,16 @@ module Hue {
 
     class _ChangeLightStateCallback {
         hidden var mLight = null;
-        hidden var mCallback = null;
         hidden var mParams = null;
+        hidden var mCallback = null;
 
-        function initialize(light, callback, params) {
+        function initialize(light, params, callback) {
             mLight = light;
-            mCallback = callback;
             mParams = params;
+            mCallback = callback;
         }
 
         function onResponse(responseCode, data) {
-            Application.getApp().blinkerDown();
-            mLight.setBusy(false);
             if (responseCode == 200) {
                 var updatedState = {};
 

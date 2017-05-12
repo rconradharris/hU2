@@ -17,6 +17,12 @@ module HueCommand {
         } else {
             enqueue(cmd, options);
         }
+        // Start the light blinking even if the command is enqueued
+        var light = options[:light];
+        if (light != null) {
+            app.blinkerUp();
+            light.setBusy(true);
+        }
     }
 
     function flush() {
@@ -39,17 +45,32 @@ module HueCommand {
         }
     }
 
-
     hidden function runImmediately(cmd, options) {
         var client = Application.getApp().getHueClient();
         if (cmd == CMD_TURN_ON_ALL_LIGHTS) {
             client.turnOnAllLights(options[:on]);
         } else if (cmd == CMD_TOGGLE_LIGHT) {
             var light = options[:light];
-            client.toggleLight(light);
+            var callback = new _LightCommandDoneCallback(light);
+            client.toggleLight(light, callback.method(:onDone));
         } else if (cmd == CMD_SET_BRIGHTNESS) {
-            client.setBrightness(options[:light], option[:brightness]);
+            var light = options[:light];
+            var callback = new _LightCommandDoneCallback(light);
+            client.setBrightness(light, options[:brightness],
+                                 callback.method(:onDone));
         }
     }
 
+    class _LightCommandDoneCallback {
+        hidden var mLight = null;
+
+        function initialize(light) {
+            mLight = light;
+        }
+
+        function onDone() {
+            Application.getApp().blinkerDown();
+            mLight.setBusy(false);
+        }
+    }
 }
