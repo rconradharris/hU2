@@ -5,8 +5,11 @@ using Toybox.WatchUi as Ui;
 using Toybox.System;
 
 class LightView extends Ui.View {
+    hidden const MIN_BLINK_MS = 100;
+
     hidden var mIndex = null;
     hidden var mBlinkerOn = false;
+    hidden var mBlinkedAt = 0;          // So we get a consistent blink regardless of requestUpdate calls
 
     function initialize(index) {
         View.initialize();
@@ -55,9 +58,15 @@ class LightView extends Ui.View {
 
         dc.drawText(x, y, font, text, Gfx.TEXT_JUSTIFY_LEFT);
 
+
         if (light.getBusy()) {
-            // If we're busy then blink the light...
-            mBlinkerOn = !mBlinkerOn;
+            // If we're busy then blink the light, but use MIN_BLINK_MS to
+            // isolate us from too many requestUpdate calls
+            var now = System.getTimer();
+            if ((now - mBlinkedAt) > MIN_BLINK_MS) {
+                mBlinkerOn = !mBlinkerOn;
+                mBlinkedAt = now;
+            }
         } else if (light.getOn()) {
             mBlinkerOn = true;
         } else {

@@ -18,7 +18,7 @@ class hU2App extends Application.AppBase {
         AS_READY
     }
 
-    hidden const BLINKER_TIMER_MS = 100;
+    hidden const BLINKER_TIMER_MS = 50;
     hidden const STATE_TIMER_MS = 3000;
 
     // === START OF RESET NEEDED ===
