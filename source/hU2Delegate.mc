@@ -2,6 +2,8 @@ using Toybox.Application;
 using Toybox.Lang;
 using Toybox.WatchUi as Ui;
 
+using HueCommand;
+
 class SettingsMenuInputDelegate extends Ui.MenuInputDelegate {
     function initialize() {
         Ui.MenuInputDelegate.initialize();
@@ -11,12 +13,12 @@ class SettingsMenuInputDelegate extends Ui.MenuInputDelegate {
         var app = Application.getApp();
         app.hapticFeedback();
         if (item == :all_off) {
-            if (app.getState() == app.AS_READY) {
-                app.getHueClient().turnOnAllLights(false);
+            if (app.areActionsAllowed()) {
+                HueCommand.run(HueCommand.CMD_TURN_ON_ALL_LIGHTS, { :on => false });
             }
         } else if (item == :all_on) {
-            if (app.getState() == app.AS_READY) {
-                app.getHueClient().turnOnAllLights(true);
+            if (app.areActionsAllowed()) {
+                HueCommand.run(HueCommand.CMD_TURN_ON_ALL_LIGHTS, { :on => true });
             }
         } else if (item == :reset) {
             Ui.pushView(new Ui.Confirmation.initialize(Ui.loadResource(Rez.Strings.reset) + "?"),
@@ -57,7 +59,7 @@ class hU2Delegate extends Ui.BehaviorDelegate {
         var title =  Lang.format("$1$ $2$", [Ui.loadResource(Rez.Strings.AppName), Ui.loadResource(Rez.Strings.AppVersion)]);
         menu.setTitle(title);
 
-        if (app.getState() == app.AS_READY) {
+        if (app.areActionsAllowed()) {
             menu.addItem(Ui.loadResource(Rez.Strings.all_off), :all_off);
             menu.addItem(Ui.loadResource(Rez.Strings.all_on), :all_on);
         }

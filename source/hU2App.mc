@@ -185,9 +185,13 @@ class hU2App extends Application.AppBase {
             if (mState == AS_FETCHING) {
                 blinkerDown();
             }
+
             setState(AS_READY);
             mSynced = true;
             Ui.requestUpdate();
+
+            // Run any enqueued commands now that we're synced up
+            HueCommand.flush();
         }
     }
 

@@ -2,6 +2,9 @@ using Toybox.Application;
 using Toybox.Lang;
 using Toybox.WatchUi as Ui;
 
+using HueCommand;
+
+
 class LightDelegate extends Ui.BehaviorDelegate {
     hidden var mIndex = null;
 
@@ -56,7 +59,7 @@ class LightDelegate extends Ui.BehaviorDelegate {
         Application.getApp().hapticFeedback();
 
         var light = lights[mIndex];
-        client.toggleLight(light);
+        HueCommand.run(HueCommand.CMD_TOGGLE_LIGHT, { :light => light });
         return true;
     }
 
@@ -101,8 +104,10 @@ class BrightnessMenuInputDelegate extends Ui.MenuInputDelegate {
         } else if (item == :pct_50) {
             pct = 0.50;
         }
-        if (app.getState() == app.AS_READY) {
-            app.getHueClient().setBrightness(mLight, (pct * 254).toNumber());
+        if (app.areActionsAllowed()) {
+            var brightness = (pct * 254).toNumber();
+            HueCommand.run(HueCommand.CMD_SET_BRIGHTNESS, { :light => mLight,
+                                                            :brightness => brightness });
         }
     }
 }

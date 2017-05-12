@@ -191,6 +191,10 @@ module Hue {
             return mName;
         }
 
+        function toString() {
+            return Lang.format("Light(id=$1$, name=$2$)", [mId, mName]);
+        }
+
         function setBusy(busy) {
             mBusy = busy;
         }
