@@ -91,8 +91,18 @@ class LightView extends Ui.View {
 
         var radius = getLightCircleRadius(dc);
 
-        var reachable = light.getReachable();
-        if (reachable != null && !reachable) {
+        if (!light.isStateAvailable()) {
+            dc.setColor(Gfx.COLOR_BLUE, Gfx.COLOR_TRANSPARENT);
+            dc.setPenWidth(3);
+            dc.drawCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 20, radius);
+
+            var loadFont = Gfx.FONT_LARGE;
+            var loadText = "...";
+            var loadDim = dc.getTextDimensions(loadText, loadFont);
+            dc.drawText(dc.getWidth() / 2, (dc.getHeight() - loadDim[1]) / 2 + 20,
+                        loadFont, loadText, Gfx.TEXT_JUSTIFY_CENTER);
+
+        } else if (!light.getReachable()) {
             dc.setColor(Gfx.COLOR_RED, Gfx.COLOR_TRANSPARENT);
             dc.setPenWidth(3);
             dc.drawCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 20, radius);
