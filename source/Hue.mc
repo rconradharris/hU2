@@ -4,6 +4,9 @@ using Toybox.Lang;
 using Toybox.System;
 using Toybox.WatchUi as Ui;
 
+using PropertyStore;
+
+
 module Hue {
     enum {
         REGISTRATION_FAILED,
@@ -117,16 +120,41 @@ module Hue {
             var success = false;
             if (responseCode == 200) {
                 success = true;
+
                 var lightIds = data.keys();
-                for (var i=0; i < lightIds.size(); i++) {
+                var light;
+                var keep = {};
+
+                // Add/update lights that are still around
+                for (var i=0; i < data.size(); i++) {
                     var lightId = lightIds[i];
                     var ld = data[lightId];
-                    var light = new Light(lightId, ld["name"]);
+
+                    light = mClient.getLight(lightId);
+
+                    if (light == null) {
+                        light = new Light(lightId, ld["name"]);
+                        mClient.addLight(light);
+                    }
+
                     light.updateState(ld["state"]);
-                    mClient.addLight(light);
+                    keep[lightId] = true;
                 }
+
+                // Remove any lights that are no longer present
+                var lights = mClient.getLights();
+                for (var i=0; i < lights.size(); i++) {
+                    light = lights[i];
+                    if (!keep.hasKey(light.getId())) {
+                        mClient.removeLight(light);
+                    }
+                }
+
+                mClient.saveLights();
             }
-            mCallback.invoke(success);
+            if (mCallback != null) {
+                mCallback.invoke(success);
+            }
         }
     }
 
@@ -229,20 +257,31 @@ module Hue {
         function initialize(bridge, username) {
             mBridge = bridge;
             mUsername = username;
+
+            loadLights();
         }
 
-        hidden function doRequest(method, url, params, callback) {
-            mBridge.doRequest(method, Lang.format("/$1$$2$", [mUsername, url]), params, callback);
+        hidden function loadLights() {
+            var lightIds = PropertyStore.get("lightIds");
+            var lightNames = PropertyStore.get("lightNames");
+            if (lightIds == null || lightNames == null) {
+                return;
+            }
+            if (lightIds.size() != lightNames.size()) {
+                return;
+            }
+            for (var i=0; i < lightIds.size(); i++) {
+                var light = new Light(lightIds[i], lightNames[i]);
+                mLights[lightIds[i]] = light;
+            }
         }
 
         function addLight(light) {
             mLights[light.getId()] = light;
         }
 
-        function sync(callback) {
-            var callbackWrapper = new _FetchCallback(self, callback);
-            doRequest(Communications.HTTP_REQUEST_METHOD_GET,
-                      "/lights", {}, callbackWrapper.method(:onResponse));
+        function removeLight(light) {
+            mLights.remove(light.getId());
         }
 
         function getLights() {
@@ -251,6 +290,33 @@ module Hue {
 
         function getLight(lightId) {
             return mLights[lightId];
+        }
+
+        function saveLights() {
+            var count = mLights.size();
+
+            var lightIds = new [count];
+            var lightNames = new [count];
+            var lights = mLights.values();
+
+            for (var i=0; i < count; i++) {
+                var light = lights[i];
+                lightIds[i] = light.getId();
+                lightNames[i] = light.getName();
+            }
+
+            PropertyStore.set("lightIds", lightIds);
+            PropertyStore.set("lightNames", lightNames);
+        }
+
+        hidden function doRequest(method, url, params, callback) {
+            mBridge.doRequest(method, Lang.format("/$1$$2$", [mUsername, url]), params, callback);
+        }
+
+        function sync(callback) {
+            var callbackWrapper = new _FetchCallback(self, callback);
+            doRequest(Communications.HTTP_REQUEST_METHOD_GET,
+                      "/lights", {}, callbackWrapper.method(:onResponse));
         }
 
         function turnOnAllLights(on) {
