@@ -195,8 +195,7 @@ class hU2App extends Application.AppBase {
                 if (mSynced) {
                     setState(AS_READY);
                 } else {
-                    setState(AS_SYNCING);
-                    mHueClient.sync(method(:onSync));
+                    sync();
                 }
             }
         } else {
