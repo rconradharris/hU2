@@ -224,6 +224,10 @@ module Hue {
             return mState["bri"];
         }
 
+        function getXY() {
+            return mState["xy"];
+        }
+
         function getReachable() {
             return mState["reachable"];
         }
@@ -352,6 +356,24 @@ module Hue {
                 brightness = 0;
             }
             changeState(light, { "bri" => brightness, "on" => true }, callback);
+        }
+
+        function setXY(light, xy, callback) {
+            // Ensure x bounds
+            if (xy[0] > 1.0) {
+                xy[0] = 1.0;
+            } else if (xy[0] < 0.0) {
+                xy[0] = 0.0;
+            }
+
+            // Ensure y bounds
+            if (xy[1] > 1.0) {
+                xy[1] = 1.0;
+            } else if (xy[1] < 0.0) {
+                xy[1] = 0.0;
+            }
+
+            changeState(light, { "xy" => xy, "on" => true }, callback);
         }
 
         // Params:

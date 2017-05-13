@@ -1,0 +1,7 @@
+hU2 is a simple, fast way to control your Phillips Hue lights. Features include:
+
+* Turn on/off all lights at once
+* Ability to turn on/off individual lights
+* Ability to set the brightness on individual lights
+
+It currently does not let you adjust the color of your lights, if you want to do that you'll need to break out your phone :)

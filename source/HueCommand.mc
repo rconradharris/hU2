@@ -5,7 +5,8 @@ module HueCommand {
     enum {
         CMD_TURN_ON_ALL_LIGHTS,
         CMD_TOGGLE_LIGHT,
-        CMD_SET_BRIGHTNESS
+        CMD_SET_BRIGHTNESS,
+        CMD_SET_XY
     }
 
     hidden var mQueue = null;
@@ -56,8 +57,11 @@ module HueCommand {
         } else if (cmd == CMD_SET_BRIGHTNESS) {
             var light = options[:light];
             var callback = new _LightCommandDoneCallback(light);
-            client.setBrightness(light, options[:brightness],
-                                 callback.method(:onDone));
+            client.setBrightness(light, options[:brightness], callback.method(:onDone));
+        } else if (cmd == CMD_SET_XY) {
+            var light = options[:light];
+            var callback = new _LightCommandDoneCallback(light);
+            client.setXY(light, options[:xy], callback.method(:onDone));
         }
     }
 

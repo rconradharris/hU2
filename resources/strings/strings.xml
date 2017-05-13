@@ -1,11 +1,14 @@
 <strings>
     <string id="AppName">hU2</string>
     <string id="AppDescription">Hue Light Controller</string>
-    <string id="AppVersion">0.2</string>
+    <string id="AppVersion">0.3</string>
     <string id="all_off">All Off</string>
     <string id="all_on">All On</string>
+    <string id="blue">Blue</string>
     <string id="bridge_ip">Hue Bridge IP</string>
     <string id="brightness">Brightness</string>
+    <string id="color">Color</string>
+    <string id="cool_white">Cool White</string>
     <string id="discovering_bridge0">Discovering</string>
     <string id="discovering_bridge1">Hue Bridge...</string>
     <string id="init">Loading</string>
@@ -16,7 +19,9 @@
     <string id="press_button0">Press Button</string>
     <string id="press_button1">on Hue Bridge</string>
     <string id="ready">Ready</string>
+    <string id="red">Red</string>
     <string id="reset">Reset</string>
     <string id="syncing">Syncing...</string>
     <string id="unreachable">Unreachable</string>
+    <string id="warm_white">Warm White</string>
 </strings>
