@@ -8,6 +8,7 @@
     <string id="bridge_ip">Hue Bridge IP</string>
     <string id="brightness">Brightness</string>
     <string id="color">Color</string>
+    <string id="color_loop">Color Loop</string>
     <string id="cool_white">Cool White</string>
     <string id="discovering_bridge0">Discovering</string>
     <string id="discovering_bridge1">Hue Bridge...</string>

@@ -108,6 +108,7 @@ class LightMenuInputDelegate extends Ui.MenuInputDelegate {
             menu.addItem(Ui.loadResource(Rez.Strings.cool_white), :cool_white);
             menu.addItem(Ui.loadResource(Rez.Strings.red), :red);
             menu.addItem(Ui.loadResource(Rez.Strings.blue), :blue);
+            menu.addItem(Ui.loadResource(Rez.Strings.color_loop), :color_loop);
             Ui.pushView(menu, new ColorMenuInputDelegate(mLight), Ui.SLIDE_UP);
         }
     }
@@ -123,8 +124,15 @@ class ColorMenuInputDelegate extends Ui.MenuInputDelegate {
 
     function onMenuItem(item) {
         var app = Application.getApp();
-        var xy = [1.0, 1.0];
-        if (item == :warm_white) {
+        if (!app.areActionsAllowed()) {
+            return;
+        }
+        app.hapticFeedback();
+        var xy = null;
+        if (item == :color_loop) {
+            HueCommand.run(HueCommand.CMD_SET_EFFECT,
+                           { :light => mLight, :effect => "colorloop" });
+        } else if (item == :warm_white) {
             xy = [0.475800, 0.413200];
         } else if (item == :cool_white) {
             xy = [0.3227,0.329];
@@ -133,10 +141,8 @@ class ColorMenuInputDelegate extends Ui.MenuInputDelegate {
         } else if (item == :blue) {
             xy = [0.1825,0.0697];
         }
-        if (app.areActionsAllowed()) {
-            app.hapticFeedback();
-            HueCommand.run(HueCommand.CMD_SET_XY, { :light => mLight,
-                                                    :xy => xy });
+        if (xy != null) {
+            HueCommand.run(HueCommand.CMD_SET_XY, { :light => mLight, :xy => xy });
         }
     }
 }

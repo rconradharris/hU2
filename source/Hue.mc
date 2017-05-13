@@ -378,6 +378,11 @@ module Hue {
             changeState(light, { "bri" => brightness, "on" => true }, callback);
         }
 
+        function setEffect(light, effect, callback) {
+            changeState(light, { "effect" => effect, "on" => true }, callback);
+        }
+
+
         function setXY(light, xy, callback) {
             // Ensure x bounds
             if (xy[0] > 1.0) {
@@ -393,7 +398,7 @@ module Hue {
                 xy[1] = 0.0;
             }
 
-            changeState(light, { "xy" => xy, "on" => true }, callback);
+            changeState(light, { "effect" => "none", "xy" => xy, "on" => true }, callback);
         }
 
         // Params:

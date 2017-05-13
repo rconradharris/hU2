@@ -6,7 +6,8 @@ module HueCommand {
         CMD_TURN_ON_ALL_LIGHTS,
         CMD_TOGGLE_LIGHT,
         CMD_SET_BRIGHTNESS,
-        CMD_SET_XY
+        CMD_SET_XY,
+        CMD_SET_EFFECT
     }
 
     hidden var mQueue = null;
@@ -62,6 +63,10 @@ module HueCommand {
             var light = options[:light];
             var callback = new _LightCommandDoneCallback(light);
             client.setXY(light, options[:xy], callback.method(:onDone));
+        } else if (cmd == CMD_SET_EFFECT) {
+            var light = options[:light];
+            var callback = new _LightCommandDoneCallback(light);
+            client.setEffect(light, options[:effect], callback.method(:onDone));
         }
     }
 
