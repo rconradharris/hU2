@@ -72,6 +72,7 @@ class LightDelegate extends Ui.BehaviorDelegate {
         app.hapticFeedback();
 
         var menu = new Ui.Menu();
+        menu.setTitle(light.getName());
         menu.addItem(Ui.loadResource(Rez.Strings.brightness), :brightness);
         if (light.hasColorSupport()) {
             menu.addItem(Ui.loadResource(Rez.Strings.color), :color);
