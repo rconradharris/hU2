@@ -73,7 +73,9 @@ class LightDelegate extends Ui.BehaviorDelegate {
 
         var menu = new Ui.Menu();
         menu.addItem(Ui.loadResource(Rez.Strings.brightness), :brightness);
-        menu.addItem(Ui.loadResource(Rez.Strings.color), :color);
+        if (light.hasColorSupport()) {
+            menu.addItem(Ui.loadResource(Rez.Strings.color), :color);
+        }
         Application.getApp().hapticFeedback();
         Ui.pushView(menu, new LightMenuInputDelegate(light), Ui.SLIDE_UP);
 

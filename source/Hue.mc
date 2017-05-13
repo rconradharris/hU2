@@ -133,7 +133,7 @@ module Hue {
                     light = mClient.getLight(lightId);
 
                     if (light == null) {
-                        light = new Light(lightId, ld["name"]);
+                        light = new Light(lightId, ld["name"], ld["type"]);
                         mClient.addLight(light);
                     }
 
@@ -172,15 +172,17 @@ module Hue {
         // Loaded immediately from property store
         hidden var mId = null;
         hidden var mName = null;
+        hidden var mType = null;
 
         // Loaded sometime after initialization (whenever the Hue API responds back)
         hidden var mState = {};
 
         hidden var mBusy = false;
 
-        function initialize(id, name) {
+        function initialize(id, name, type) {
             mId = id;
             mName = name;
+            mType = type;
         }
 
         function getId() {
@@ -189,6 +191,17 @@ module Hue {
 
         function getName() {
             return mName;
+        }
+
+        function getType() {
+            return mType;
+        }
+
+        function hasColorSupport() {
+            if (mType == null) {
+                return true;
+            }
+            return mType.toLower().find("color") != null;
         }
 
         function toString() {
@@ -272,14 +285,18 @@ module Hue {
         hidden function loadLights() {
             var lightIds = PropertyStore.get("lightIds");
             var lightNames = PropertyStore.get("lightNames");
-            if (lightIds == null || lightNames == null) {
+            var lightTypes = PropertyStore.get("lightTypes");
+            if (lightIds == null || lightNames == null || lightTypes == null) {
                 return;
             }
             if (lightIds.size() != lightNames.size()) {
                 return;
             }
+            if (lightIds.size() != lightTypes.size()) {
+                return;
+            }
             for (var i=0; i < lightIds.size(); i++) {
-                var light = new Light(lightIds[i], lightNames[i]);
+                var light = new Light(lightIds[i], lightNames[i], lightTypes[i]);
                 mLights[lightIds[i]] = light;
             }
         }
@@ -305,16 +322,19 @@ module Hue {
 
             var lightIds = new [count];
             var lightNames = new [count];
+            var lightTypes = new [count];
             var lights = mLights.values();
 
             for (var i=0; i < count; i++) {
                 var light = lights[i];
                 lightIds[i] = light.getId();
                 lightNames[i] = light.getName();
+                lightTypes[i] = light.getType();
             }
 
             PropertyStore.set("lightIds", lightIds);
             PropertyStore.set("lightNames", lightNames);
+            PropertyStore.set("lightTypes", lightTypes);
         }
 
         hidden function doRequest(method, url, params, callback) {
