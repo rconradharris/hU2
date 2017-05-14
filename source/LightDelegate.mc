@@ -40,6 +40,13 @@ class LightDelegate extends Ui.BehaviorDelegate {
     }
 
     function onPreviousPage() {
+        // HACK: The firmware on FR230 and 235 will generate an onPreviousPage
+        // when an onMenu event is emitted. To work around this, we disable
+        // the up button so that spruious onPrevious has no effect
+        var ds = System.getDeviceSettings();
+        if (ds.screenShape == System.SCREEN_SHAPE_SEMI_ROUND && !ds.isTouchScreen) {
+            return false;
+        }
         return switchPage(-1, Ui.SLIDE_RIGHT);
     }
 

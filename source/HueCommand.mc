@@ -1,6 +1,8 @@
 using Toybox.Application;
 using Toybox.System;
 
+using PropertyStore;
+
 module HueCommand {
     enum {
         CMD_TURN_ON_ALL_LIGHTS,
@@ -49,24 +51,31 @@ module HueCommand {
 
     hidden function runImmediately(cmd, options) {
         var client = Application.getApp().getHueClient();
+        var light = null;
+
         if (cmd == CMD_TURN_ON_ALL_LIGHTS) {
             client.turnOnAllLights(options[:on]);
         } else if (cmd == CMD_TOGGLE_LIGHT) {
-            var light = options[:light];
+            light = options[:light];
             var callback = new _LightCommandDoneCallback(light);
             client.toggleLight(light, callback.method(:onDone));
         } else if (cmd == CMD_SET_BRIGHTNESS) {
-            var light = options[:light];
+            light = options[:light];
             var callback = new _LightCommandDoneCallback(light);
             client.setBrightness(light, options[:brightness], callback.method(:onDone));
         } else if (cmd == CMD_SET_XY) {
-            var light = options[:light];
+            light = options[:light];
             var callback = new _LightCommandDoneCallback(light);
             client.setXY(light, options[:xy], callback.method(:onDone));
         } else if (cmd == CMD_SET_EFFECT) {
-            var light = options[:light];
+            light = options[:light];
             var callback = new _LightCommandDoneCallback(light);
             client.setEffect(light, options[:effect], callback.method(:onDone));
+        }
+
+        if (light != null) {
+            var lightId = light.getId();
+            PropertyStore.set("lastLightId", lightId);
         }
     }
 

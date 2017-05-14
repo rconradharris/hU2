@@ -1,3 +1,13 @@
+0.5
+===
+
+- Remember and start on the last light you used
+
+0.4
+===
+
+- Disabled 'Up' button on FR230/235 devices to workaround a firmware issue when menu button is clicked
+
 0.3
 ===
 

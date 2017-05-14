@@ -3,6 +3,7 @@ using Toybox.Lang;
 using Toybox.WatchUi as Ui;
 
 using HueCommand;
+using PropertyStore;
 
 class SettingsMenuInputDelegate extends Ui.MenuInputDelegate {
     function initialize() {
@@ -70,11 +71,26 @@ class hU2Delegate extends Ui.BehaviorDelegate {
         return true;
     }
 
+    hidden function getLastLightIndex() {
+        var lightId = PropertyStore.get("lastLightId");
+        if (lightId != null) {
+            var client = Application.getApp().getHueClient();
+            var lights = client.getLights();
+            for (var i=0; i < lights.size(); i++) {
+                if (lights[i].getId() == lightId) {
+                    return i;
+                }
+            }
+        }
+        return 0;
+    }
+
     function onSelect() {
         var app = Application.getApp();
         if (app.areActionsAllowed()) {
             app.hapticFeedback();
-            Ui.pushView(new LightView(0), new LightDelegate(0), Ui.SLIDE_UP);
+            var idx = getLastLightIndex();
+            Ui.pushView(new LightView(idx), new LightDelegate(idx), Ui.SLIDE_UP);
         }
     }
  }
