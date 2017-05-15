@@ -1,12 +1,6 @@
 using Toybox.Application;
 
 module PropertyStore {
-    enum {
-        PROP_BRIDGE_IP            = -1,
-        PROP_USERNAME             = -2,
-        PROP_LIGHT_IDS            = -3
-    }
-
     function get(key) {
         return Application.getApp().getProperty(key);
     }

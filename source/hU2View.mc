@@ -2,7 +2,11 @@ using Toybox.WatchUi as Ui;
 using Toybox.Graphics as Gfx;
 using Toybox.System;
 
+using Utils;
+
 class hU2View extends Ui.View {
+    hidden const BOX_FONT = Gfx.FONT_MEDIUM;
+    hidden const BOX_TEXT_COLOR = Gfx.COLOR_WHITE;
     hidden const BOX_MARGIN = 15;
     hidden const BOX_RADIUS = 10;
 
@@ -23,35 +27,37 @@ class hU2View extends Ui.View {
     function onShow() {
     }
 
-    hidden function drawBoxText(dc, x, y, font, lines, textColor, boxColor, margin, radius) {
+    hidden function drawBoxText(dc, y, lines, boxColor, textColor) {
+        var x = dc.getWidth() / 2;
         var textHeight = 0;
         var textMaxWidth = 0;
         for (var i=0; i < lines.size(); i++) {
-            var dim = dc.getTextDimensions(lines[i], font);
+            var dim = dc.getTextDimensions(lines[i], BOX_FONT);
             if (dim[0] > textMaxWidth) {
                 textMaxWidth = dim[0];
             }
             textHeight += dim[1];
         }
 
-        var width = textMaxWidth + 2 * margin;
-        var height = textHeight + 2 * margin;
+        var width = textMaxWidth + 2 * BOX_MARGIN;
+        var height = textHeight + 2 * BOX_MARGIN;
 
         var boxX = x - (width / 2);
         var boxY = y - (height / 2);
 
         // Draw box
         dc.setColor(boxColor, Gfx.COLOR_TRANSPARENT);
-        dc.fillRoundedRectangle(boxX, boxY, width, height, radius);
+        dc.fillRoundedRectangle(boxX, boxY, width, height, BOX_RADIUS);
 
         // Draw text
-        dc.setColor(textColor, Gfx.COLOR_TRANSPARENT);
-
-        y -= textHeight / 2;
-        for (var i=0; i < lines.size(); i++) {
-            var dim = dc.getTextDimensions(lines[i], font);
-            dc.drawText(x, y, font, lines[i], Gfx.TEXT_JUSTIFY_CENTER);
-            y += dim[1];
+        if (textColor != null) {
+            y -= textHeight / 2;
+            for (var i=0; i < lines.size(); i++) {
+                var dim = dc.getTextDimensions(lines[i], BOX_FONT);
+                Utils.drawTextWithDropShadow(dc, x, y, BOX_FONT, lines[i],
+                                             Gfx.TEXT_JUSTIFY_CENTER, textColor);
+                y += dim[1];
+            }
         }
     }
 
@@ -89,74 +95,6 @@ class hU2View extends Ui.View {
         return logoHeight;
     }
 
-    hidden function drawSyncing(dc, y) {
-        var textColor = Gfx.COLOR_WHITE;
-        if (mBlinkCount > 10) {
-            textColor = Gfx.COLOR_BLUE;
-        }
-        // 20 means 10 ticks on, 10 ticks off
-        mBlinkCount = (mBlinkCount + 1) % 20;
-        var lines = [Ui.loadResource(Rez.Strings.syncing)];
-        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
-                                     lines, textColor, Gfx.COLOR_BLUE,
-                                     BOX_MARGIN, BOX_RADIUS);
-    }
-
-    hidden function drawReady(dc, y) {
-        var lines = [Ui.loadResource(Rez.Strings.ready)];
-        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
-                                     lines, Gfx.COLOR_WHITE, Gfx.COLOR_GREEN,
-                                     BOX_MARGIN, BOX_RADIUS);
-
-
-    }
-
-    hidden function drawPhoneNotConnected(dc, y) {
-        var lines = [Ui.loadResource(Rez.Strings.phone_not_connected0),
-                     Ui.loadResource(Rez.Strings.phone_not_connected1)];
-        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
-                                     lines, Gfx.COLOR_WHITE, Gfx.COLOR_RED,
-                                     BOX_MARGIN, BOX_RADIUS);
-    }
-
-    hidden function drawPressButtonOnHue(dc, y) {
-        var lines = [Ui.loadResource(Rez.Strings.press_button0),
-                     Ui.loadResource(Rez.Strings.press_button1)];
-        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
-                                     lines, Gfx.COLOR_WHITE, Gfx.COLOR_BLUE,
-                                     BOX_MARGIN, BOX_RADIUS);
-
-    }
-
-    hidden function drawDiscoveringBridge(dc, y) {
-        var textColor = Gfx.COLOR_WHITE;
-        if (mBlinkCount > 10) {
-            textColor = Gfx.COLOR_BLUE;
-        }
-        // 20 means 10 ticks on, 10 ticks off
-        mBlinkCount = (mBlinkCount + 1) % 20;
-        var lines = [Ui.loadResource(Rez.Strings.discovering_bridge0),
-                     Ui.loadResource(Rez.Strings.discovering_bridge1)];
-        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
-                                     lines, textColor, Gfx.COLOR_BLUE,
-                                     BOX_MARGIN, BOX_RADIUS);
-    }
-
-    hidden function drawNoBridge(dc, y) {
-        var lines = [Ui.loadResource(Rez.Strings.no_bridge0),
-                     Ui.loadResource(Rez.Strings.no_bridge1)];
-        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
-                                     lines, Gfx.COLOR_WHITE, Gfx.COLOR_RED,
-                                     BOX_MARGIN, BOX_RADIUS);
-    }
-
-    hidden function drawInit(dc, y) {
-        var lines = [Ui.loadResource(Rez.Strings.init)];
-        drawBoxText(dc, dc.getWidth() / 2, y, Gfx.FONT_MEDIUM,
-                                     lines, Gfx.COLOR_WHITE, Gfx.COLOR_BLUE,
-                                     BOX_MARGIN, BOX_RADIUS);
-    }
-
     // Update the view
     function onUpdate(dc) {
         // Call the parent onUpdate function to redraw the layout
@@ -190,19 +128,33 @@ class hU2View extends Ui.View {
         var app = Application.getApp();
         var state = app.getState();
         if (state == app.AS_INIT) {
-            drawInit(dc, boxY);
+            drawBoxText(dc, boxY, [Ui.loadResource(Rez.Strings.init)],
+                        Gfx.COLOR_BLUE, BOX_TEXT_COLOR);
         } else if (state == app.AS_NO_BRIDGE) {
-            drawNoBridge(dc, boxY);
+            var lines = [Ui.loadResource(Rez.Strings.no_bridge0),
+                         Ui.loadResource(Rez.Strings.no_bridge1)];
+            drawBoxText(dc, boxY, lines, Gfx.COLOR_RED, BOX_TEXT_COLOR);
         } else if (state == app.AS_DISCOVERING_BRIDGE) {
-            drawDiscoveringBridge(dc, boxY);
+            var textColor = (mBlinkCount > 10) ? null : BOX_TEXT_COLOR;
+            mBlinkCount = (mBlinkCount + 1) % 20;
+            var lines = [Ui.loadResource(Rez.Strings.discovering_bridge0),
+                         Ui.loadResource(Rez.Strings.discovering_bridge1)];
+            drawBoxText(dc, boxY, lines, Gfx.COLOR_BLUE, textColor);
         } else if (state == app.AS_NO_USERNAME || state == app.AS_REGISTERING) {
-            drawPressButtonOnHue(dc, boxY);
+            var lines = [Ui.loadResource(Rez.Strings.press_button0),
+                         Ui.loadResource(Rez.Strings.press_button1)];
+            drawBoxText(dc, boxY, lines, Gfx.COLOR_BLUE, BOX_TEXT_COLOR);
         } else if (state == app.AS_PHONE_NOT_CONNECTED) {
-            drawPhoneNotConnected(dc, boxY);
+            var lines = [Ui.loadResource(Rez.Strings.phone_not_connected0),
+                         Ui.loadResource(Rez.Strings.phone_not_connected1)];
+            drawBoxText(dc, boxY, lines, Gfx.COLOR_RED, BOX_TEXT_COLOR);
         } else if (state == app.AS_FETCHING) {
-            drawSyncing(dc, boxY);
+            var textColor = (mBlinkCount > 10) ? null : BOX_TEXT_COLOR;
+            mBlinkCount = (mBlinkCount + 1) % 20;
+            drawBoxText(dc, boxY, [Ui.loadResource(Rez.Strings.syncing)], Gfx.COLOR_BLUE, textColor);
         } else if (app.areActionsAllowed()) {
-            drawReady(dc, boxY);
+            drawBoxText(dc, boxY, [Ui.loadResource(Rez.Strings.ready)],
+                        Gfx.COLOR_GREEN, BOX_TEXT_COLOR);
         }
     }
 

@@ -4,9 +4,11 @@ using Toybox.Math;
 using Toybox.WatchUi as Ui;
 using Toybox.System;
 
+using Utils;
+
+
 class LightView extends Ui.View {
     hidden const MIN_BLINK_MS = 100;
-    hidden const DROP_SHADOW_PX = 2;
     hidden const CIRCLE_PADDING_PX = 10;
 
     hidden var mIndex = null;
@@ -74,7 +76,6 @@ class LightView extends Ui.View {
 
         dc.drawText(x, y, font, text, Gfx.TEXT_JUSTIFY_LEFT);
 
-
         if (light.getBusy()) {
             // If we're busy then blink the light, but use MIN_BLINK_MS to
             // isolate us from too many requestUpdate calls
@@ -101,7 +102,6 @@ class LightView extends Ui.View {
             var loadDim = dc.getTextDimensions(loadText, loadFont);
             dc.drawText(dc.getWidth() / 2, (dc.getHeight() - loadDim[1]) / 2 + 20,
                         loadFont, loadText, Gfx.TEXT_JUSTIFY_CENTER);
-
         } else if (!light.getReachable()) {
             dc.setColor(Gfx.COLOR_RED, Gfx.COLOR_TRANSPARENT);
             dc.setPenWidth(3);
@@ -121,17 +121,10 @@ class LightView extends Ui.View {
                 var pctBrightness = Math.round((light.getBrightness().toFloat() / 254) * 100).toNumber();
                 var pctText = pctBrightness.toString() + "%";
                 var pctDim = dc.getTextDimensions(pctText, pctFont);
-
-                // Draw text with drop shadow
-                dc.setColor(Gfx.COLOR_DK_GRAY, Gfx.COLOR_TRANSPARENT);
-                dc.drawText(dc.getWidth() / 2 + DROP_SHADOW_PX,
-                            (dc.getHeight() - pctDim[1]) / 2 + 20 + DROP_SHADOW_PX,
-                            pctFont, pctText, Gfx.TEXT_JUSTIFY_CENTER);
-
-                dc.setColor(Gfx.COLOR_WHITE, Gfx.COLOR_TRANSPARENT);
-                dc.drawText(dc.getWidth() / 2,
+                Utils.drawTextWithDropShadow(dc,
+                            dc.getWidth() / 2,
                             (dc.getHeight() - pctDim[1]) / 2 + 20,
-                            pctFont, pctText, Gfx.TEXT_JUSTIFY_CENTER);
+                            pctFont, pctText, Gfx.TEXT_JUSTIFY_CENTER, Gfx.COLOR_WHITE);
             }
         } else {
             dc.setColor(Gfx.COLOR_DK_GRAY, Gfx.COLOR_TRANSPARENT);
