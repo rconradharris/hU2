@@ -46,7 +46,15 @@ class LightView extends Ui.View {
 
     // Update the view
     function onUpdate(dc) {
-        var client = Application.getApp().getHueClient();
+        var app = Application.getApp();
+
+        // Make sure we're still in a show where we should show lights...
+        var state = app.getState();
+        if (state != app.AS_READY && state != app.AS_UPDATING) {
+            Ui.popView(Ui.SLIDE_DOWN);
+        }
+
+        var client = app.getHueClient();
         var lights = client.getLights();
         var count = lights.size();
         if (count <= 0) {

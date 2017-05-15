@@ -181,18 +181,22 @@ class hU2App extends Application.AppBase {
     }
 
     function onSync(success) {
-        if (success) {
-            if (mState == AS_FETCHING) {
-                blinkerDown();
-            }
+        if (mState == AS_FETCHING) {
+            blinkerDown();
+        }
 
+        if (success) {
             setState(AS_READY);
             mSynced = true;
-            Ui.requestUpdate();
-
             // Run any enqueued commands now that we're synced up
             HueCommand.flush();
+        } else {
+            // Commands won't complete in a reasonable period of time, so just
+            // toss them out...
+            HueCommand.clear();
+            setState(AS_NO_BRIDGE);
         }
+        Ui.requestUpdate();
     }
 
     function onStateTick() {

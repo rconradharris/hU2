@@ -40,6 +40,13 @@ module HueCommand {
         mQueue = null;
     }
 
+    function clear() {
+        if (mQueue == null) {
+            return;
+        }
+        mQueue = null;
+    }
+
     hidden function enqueue(cmd, options) {
         options[:cmd] = cmd;
         if (mQueue == null) {
