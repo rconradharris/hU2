@@ -102,6 +102,8 @@ class LightView extends Ui.View {
         }
 
         var radius = getLightCircleRadius(dc);
+        var circleX = dc.getWidth() / 2;
+        var circleY = dc.getHeight() / 2 + app.getPixelsBelowCenter();
 
         if (!light.isStateAvailable()) {
             var now = System.getTimer();
@@ -112,20 +114,21 @@ class LightView extends Ui.View {
             dc.setColor(Gfx.COLOR_BLUE, Gfx.COLOR_TRANSPARENT);
             dc.setPenWidth(3);
             var endDegree = (mArcStartDegree + (360 - ARC_GAP_DEGREES)) % 360;
-            dc.drawArc(dc.getWidth() / 2, dc.getHeight() / 2 + 20, radius, Gfx.ARC_COUNTER_CLOCKWISE, mArcStartDegree, endDegree);
+            dc.drawArc(circleX, circleY, radius, Gfx.ARC_COUNTER_CLOCKWISE,
+                       mArcStartDegree, endDegree);
         } else if (!light.getReachable()) {
             dc.setColor(Gfx.COLOR_RED, Gfx.COLOR_TRANSPARENT);
             dc.setPenWidth(3);
-            dc.drawCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 20, radius);
+            dc.drawCircle(circleX, circleY, radius);
 
             var unreachableFont = Gfx.FONT_SMALL;
             var unreachableText = Ui.loadResource(Rez.Strings.unreachable);
             dc.setColor(Gfx.COLOR_RED, Gfx.COLOR_TRANSPARENT);
-            dc.drawText(dc.getWidth() / 2, y + textDim[1],
+            dc.drawText(circleX, y + textDim[1],
                         unreachableFont, unreachableText, Gfx.TEXT_JUSTIFY_CENTER);
         } else if (mBlinkerOn) {
             dc.setColor(Gfx.COLOR_YELLOW, Gfx.COLOR_TRANSPARENT);
-            dc.fillCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 20, radius);
+            dc.fillCircle(circleX, circleY, radius);
 
             if (!light.getBusy()) {
                 var pctFont = getBrightnessFont();
@@ -139,14 +142,14 @@ class LightView extends Ui.View {
                 var pctText = pctBrightness.toString() + "%";
                 var pctDim = dc.getTextDimensions(pctText, pctFont);
                 Utils.drawTextWithDropShadow(dc,
-                            dc.getWidth() / 2,
-                            (dc.getHeight() - pctDim[1]) / 2 + 20,
+                            circleX,
+                            circleY - (pctDim[1] / 2),
                             pctFont, pctText, Gfx.TEXT_JUSTIFY_CENTER, Gfx.COLOR_WHITE);
             }
         } else {
             dc.setColor(Gfx.COLOR_DK_GRAY, Gfx.COLOR_TRANSPARENT);
             dc.setPenWidth(3);
-            dc.drawCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 20, radius);
+            dc.drawCircle(circleX, circleY, radius);
         }
 
     }

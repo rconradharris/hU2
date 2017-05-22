@@ -99,6 +99,7 @@ class hU2View extends Ui.View {
     function onUpdate(dc) {
         // Call the parent onUpdate function to redraw the layout
         View.onUpdate(dc);
+        var app = Application.getApp();
 
         dc.setColor(Gfx.COLOR_WHITE, Gfx.COLOR_BLACK);
         dc.clear();
@@ -116,16 +117,8 @@ class hU2View extends Ui.View {
         dc.setColor(Gfx.COLOR_WHITE, Gfx.COLOR_BLACK);
         var text = "-";
 
-        var boxY = dc.getHeight() / 2;
+        var boxY = dc.getHeight() / 2 + app.getPixelsBelowCenter();
 
-        // HACK: Nasty hack to make the description text visible on the
-        // Vivoactive
-        if (dc.getWidth() == 205 && dc.getHeight() == 148) {
-            var descDim = dc.getTextDimensions(descText, descFont);
-            boxY += descDim[1] + 5;
-        }
-
-        var app = Application.getApp();
         var state = app.getState();
         if (state == app.AS_INIT) {
             drawBoxText(dc, boxY, [Ui.loadResource(Rez.Strings.init)],

@@ -77,6 +77,11 @@ class hU2App extends Application.AppBase {
         }
     }
 
+    function getPixelsBelowCenter() {
+        // Things look slightly better when not aligned directly on center
+        return 20;
+    }
+
     function hapticFeedback() {
         var ds = System.getDeviceSettings();
         if ((Attention has :vibrate) && ds.vibrateOn && ds.isTouchScreen) {
