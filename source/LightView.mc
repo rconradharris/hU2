@@ -126,7 +126,13 @@ class LightView extends Ui.View {
 
             if (!light.getBusy()) {
                 var pctFont = getBrightnessFont();
-                var pctBrightness = Math.round((light.getBrightness().toFloat() / 254) * 100).toNumber();
+                var bri = light.getBrightness().toFloat();
+                var pctBrightness = Math.round((bri / 254) * 100).toNumber();
+                // HACK: If bri=1, then we'd show 0% which won't look right,
+                // so manually fix that up to be 1%
+                if (pctBrightness == 0 && bri > 0.0) {
+                    pctBrightness = 1;
+                }
                 var pctText = pctBrightness.toString() + "%";
                 var pctDim = dc.getTextDimensions(pctText, pctFont);
                 Utils.drawTextWithDropShadow(dc,

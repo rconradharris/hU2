@@ -1,7 +1,7 @@
 0.5
 ===
 
-- Remember and start on the last light you used
+- Start on the last light you used
 
 0.4
 ===
