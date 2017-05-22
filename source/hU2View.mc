@@ -152,6 +152,10 @@ class hU2View extends Ui.View {
             var textColor = (mBlinkCount > 10) ? null : BOX_TEXT_COLOR;
             mBlinkCount = (mBlinkCount + 1) % 20;
             drawBoxText(dc, boxY, [Ui.loadResource(Rez.Strings.syncing)], Gfx.COLOR_BLUE, textColor);
+        } else if (state == app.AS_NO_LIGHTS) {
+            var lines = [Ui.loadResource(Rez.Strings.no_lights0),
+                         Ui.loadResource(Rez.Strings.no_lights1)];
+            drawBoxText(dc, boxY, lines, Gfx.COLOR_RED, BOX_TEXT_COLOR);
         } else if (app.areActionsAllowed()) {
             drawBoxText(dc, boxY, [Ui.loadResource(Rez.Strings.ready)],
                         Gfx.COLOR_GREEN, BOX_TEXT_COLOR);

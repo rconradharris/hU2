@@ -15,6 +15,7 @@ class hU2App extends Application.AppBase {
         AS_PHONE_NOT_CONNECTED,
         AS_FETCHING,                // First sync, we don't have stored lights we can show
         AS_UPDATING,                // Subsequent sync, we have cached lights, so show them
+        AS_NO_LIGHTS,
         AS_READY
     }
 
@@ -180,13 +181,16 @@ class hU2App extends Application.AppBase {
         }
     }
 
-    function onSync(success) {
+    function onSync(status) {
         blinkerDown();
-        if (success) {
+        if (status == Hue.SYNC_SUCCESS) {
             setState(AS_READY);
             mSynced = true;
             // Run any enqueued commands now that we're synced up
             HueCommand.flush();
+        } else if (status == Hue.SYNC_NO_LIGHTS) {
+            HueCommand.clear();
+            setState(AS_NO_LIGHTS);
         } else {
             // Commands won't complete in a reasonable period of time, so just
             // toss them out...

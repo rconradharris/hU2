@@ -15,6 +15,8 @@
     <string id="init">Loading</string>
     <string id="no_bridge0">No Hue Bridge</string>
     <string id="no_bridge1">Detected</string>
+    <string id="no_lights0">No Lights</string>
+    <string id="no_lights1">Found</string>
     <string id="phone_not_connected0">Phone</string>
     <string id="phone_not_connected1">Not Connected</string>
     <string id="press_button0">Press Button</string>

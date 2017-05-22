@@ -14,6 +14,12 @@ module Hue {
         REGISTRATION_SUCCESS
     }
 
+    enum {
+        SYNC_FAILED,
+        SYNC_NO_LIGHTS,
+        SYNC_SUCCESS
+    }
+
     hidden const REQUEST_LOGGING = false;
     hidden var mRequestId = 0;
 
@@ -117,9 +123,10 @@ module Hue {
         }
 
         function onResponse(responseCode, data) {
-            var success = false;
+            var status = SYNC_FAILED;
+
             if (responseCode == 200) {
-                success = true;
+                status = (data.size() > 0) ? SYNC_SUCCESS : SYNC_NO_LIGHTS;
 
                 var lightIds = data.keys();
                 var light;
@@ -153,7 +160,7 @@ module Hue {
                 mClient.saveLights();
             }
             if (mCallback != null) {
-                mCallback.invoke(success);
+                mCallback.invoke(status);
             }
         }
     }
@@ -235,10 +242,6 @@ module Hue {
 
         function getBrightness() {
             return mState["bri"];
-        }
-
-        function getXY() {
-            return mState["xy"];
         }
 
         function getReachable() {
