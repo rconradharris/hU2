@@ -84,11 +84,11 @@ class hU2App extends Application.AppBase {
     }
 
     hidden function sync() {
+        blinkerUp();
         var count = mHueClient.getLights().size();
         if (count > 0) {
             setState(AS_UPDATING);
         } else {
-            blinkerUp();
             setState(AS_FETCHING);
         }
         mHueClient.sync(method(:onSync));
@@ -181,10 +181,7 @@ class hU2App extends Application.AppBase {
     }
 
     function onSync(success) {
-        if (mState == AS_FETCHING) {
-            blinkerDown();
-        }
-
+        blinkerDown();
         if (success) {
             setState(AS_READY);
             mSynced = true;

@@ -10,11 +10,14 @@ using Utils;
 class LightView extends Ui.View {
     hidden const MIN_BLINK_MS = 100;
     hidden const CIRCLE_PADDING_PX = 10;
+    hidden const ARC_DELTA_DEGREES = -30;  // Minus means clockwise
+    hidden const ARC_GAP_DEGREES = 90;
 
     hidden var mIndex = null;
     hidden var mBlinkerOn = false;
     hidden var mBlinkedAt = 0;          // So we get a consistent blink regardless of requestUpdate calls
     hidden var mCircleRadius = null;
+    hidden var mArcStartDegree = 0;
 
     function initialize(index) {
         View.initialize();
@@ -101,15 +104,15 @@ class LightView extends Ui.View {
         var radius = getLightCircleRadius(dc);
 
         if (!light.isStateAvailable()) {
+            var now = System.getTimer();
+            if ((now - mBlinkedAt) > MIN_BLINK_MS) {
+                mArcStartDegree = (mArcStartDegree + ARC_DELTA_DEGREES) % 360;
+                mBlinkedAt = now;
+            }
             dc.setColor(Gfx.COLOR_BLUE, Gfx.COLOR_TRANSPARENT);
             dc.setPenWidth(3);
-            dc.drawCircle(dc.getWidth() / 2, dc.getHeight() / 2 + 20, radius);
-
-            var loadFont = Gfx.FONT_LARGE;
-            var loadText = "...";
-            var loadDim = dc.getTextDimensions(loadText, loadFont);
-            dc.drawText(dc.getWidth() / 2, (dc.getHeight() - loadDim[1]) / 2 + 20,
-                        loadFont, loadText, Gfx.TEXT_JUSTIFY_CENTER);
+            var endDegree = (mArcStartDegree + (360 - ARC_GAP_DEGREES)) % 360;
+            dc.drawArc(dc.getWidth() / 2, dc.getHeight() / 2 + 20, radius, Gfx.ARC_COUNTER_CLOCKWISE, mArcStartDegree, endDegree);
         } else if (!light.getReachable()) {
             dc.setColor(Gfx.COLOR_RED, Gfx.COLOR_TRANSPARENT);
             dc.setPenWidth(3);
