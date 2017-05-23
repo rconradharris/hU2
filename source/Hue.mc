@@ -5,6 +5,7 @@ using Toybox.System;
 using Toybox.WatchUi as Ui;
 
 using PropertyStore;
+using Utils;
 
 
 module Hue {
@@ -55,21 +56,52 @@ module Hue {
     // Hack to allow us to build a callback closure
     class _DiscoverBridgeCallback {
         hidden var mCallback = null;
+        hidden var mBridgeIP = null;
 
         function initialize(callback) {
             mCallback = callback;
         }
 
+        // Stage 2: get the API version
+        function onConfigResponse(responseCode, data) {
+            var status = null;
+            if (responseCode == 200) {
+                var apiVersionStr = data["apiversion"];
+                if (apiVersionStr == null) {
+                    // Before 1.2.1 apiversion was not provided, so just
+                    // consider it 1.2.0
+                    apiVersionStr = "1.2.0";
+                }
+                var apiVersion = Utils.split(apiVersionStr, ["."]);
+                var versionSize = apiVersion.size();
+                var major = (versionSize >= 1) ? apiVersion[0] : 0;
+                var minor = (versionSize >= 2) ? apiVersion[1] : 0;
+                var extra = (versionSize >= 3) ? apiVersion[2] : 0;
+                status = { :bridgeIP => mBridgeIP,
+                           :apiVersion => [major, minor, extra] };
+            }
+            if (mCallback != null) {
+                mCallback.invoke(status);
+            }
+        }
+
+        // Stage 1: get the IP
         function onResponse(responseCode, data) {
-            var bridgeIP = null;
             if (responseCode == 200) {
                 if (data has :size && data.size() > 0) {
                     if (data[0] has :hasKey && data[0].hasKey("internalipaddress")) {
-                        bridgeIP = data[0]["internalipaddress"];
+                        mBridgeIP = data[0]["internalipaddress"];
+                        // Retrieve config in discover stage 2
+                        var options = { :method => Communications.HTTP_REQUEST_METHOD_GET,
+                                        :headers => { "Content-Type" => Communications.REQUEST_CONTENT_TYPE_JSON },
+                                        :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON };
+                        var fullUrl = Lang.format("http://$1$/api/config", [mBridgeIP]);
+                        Hue.makeWebRequest(fullUrl, null, options, method(:onConfigResponse));
                     }
                 }
+            } else {
+                mCallback.invoke(null);
             }
-            mCallback.invoke(bridgeIP);
         }
     }
 
@@ -252,9 +284,11 @@ module Hue {
 
     class Bridge {
         hidden var mIPAddress = null;
+        hidden var mApiVersion = null;
 
-        function initialize(ipAddress) {
+        function initialize(ipAddress, apiVersion) {
             mIPAddress = ipAddress;
+            mApiVersion = apiVersion;
         }
 
         function doRequest(method, url, params, callback) {
@@ -270,7 +304,6 @@ module Hue {
                       { "devicetype" => "hU2" },
                       new _RegisterCallback(callback).method(:onResponse));
         }
-
     }
 
     class Client {

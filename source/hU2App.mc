@@ -122,9 +122,11 @@ class hU2App extends Application.AppBase {
             bridgeIP = PropertyStore.get("bridgeIP");
         }
 
-        if (bridgeIP != null) {
+        var apiVersion = PropertyStore.get("apiVersion");
+
+        if (bridgeIP != null && apiVersion != null) {
             setState(AS_NO_USERNAME);
-            mBridge = new Hue.Bridge(bridgeIP);
+            mBridge = new Hue.Bridge(bridgeIP, apiVersion);
             var username = PropertyStore.get("username");
             if (username != null) {
                 mHueClient = new Hue.Client(mBridge, username);
@@ -153,8 +155,8 @@ class hU2App extends Application.AppBase {
         onStateTick();
     }
 
-    function onDiscoverBridgeIP(bridgeIP) {
-        if (bridgeIP == null) {
+    function onDiscoverBridgeIP(status) {
+        if (status == null) {
             mDiscoverAttemptsLeft--;
             if (mDiscoverAttemptsLeft > 0) {
                 Hue.discoverBridgeIP(method(:onDiscoverBridgeIP));
@@ -165,8 +167,9 @@ class hU2App extends Application.AppBase {
         } else {
             blinkerDown();
             setState(AS_NO_USERNAME);
-            PropertyStore.set("bridgeIP", bridgeIP);
-            mBridge = new Hue.Bridge(bridgeIP);
+            PropertyStore.set("bridgeIP", status[:bridgeIP]);
+            PropertyStore.set("apiVersion", status[:apiVersion]);
+            mBridge = new Hue.Bridge(status[:bridgeIP], status[:apiVersion]);
         }
     }
 
