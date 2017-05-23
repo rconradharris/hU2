@@ -280,6 +280,11 @@ module Hue {
             return mState["reachable"];
         }
 
+        function isColorLoop() {
+            var effect = mState["effect"];
+            return (effect != null) && effect.equals("colorloop");
+        }
+
     }
 
     class Bridge {

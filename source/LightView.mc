@@ -145,6 +145,26 @@ class LightView extends Ui.View {
                             circleX,
                             circleY - (pctDim[1] / 2),
                             pctFont, pctText, Gfx.TEXT_JUSTIFY_CENTER, Gfx.COLOR_WHITE);
+
+                if (light.isColorLoop()) {
+                    dc.setPenWidth(5);
+                    var startDeg = 0;
+
+                    dc.setColor(Gfx.COLOR_RED, Gfx.COLOR_TRANSPARENT);
+                    dc.drawArc(circleX, circleY, radius, Gfx.ARC_COUNTER_CLOCKWISE, startDeg, startDeg + 90);
+                    startDeg += 90;
+
+                    dc.setColor(Gfx.COLOR_GREEN, Gfx.COLOR_TRANSPARENT);
+                    dc.drawArc(circleX, circleY, radius, Gfx.ARC_COUNTER_CLOCKWISE, startDeg, startDeg + 90);
+                    startDeg += 90;
+
+                    dc.setColor(Gfx.COLOR_BLUE, Gfx.COLOR_TRANSPARENT);
+                    dc.drawArc(circleX, circleY, radius, Gfx.ARC_COUNTER_CLOCKWISE, startDeg, startDeg + 90);
+                    startDeg += 90;
+
+                    dc.setColor(Gfx.COLOR_WHITE, Gfx.COLOR_TRANSPARENT);
+                    dc.drawArc(circleX, circleY, radius, Gfx.ARC_COUNTER_CLOCKWISE, startDeg, startDeg + 90);
+                }
             }
         } else {
             dc.setColor(Gfx.COLOR_DK_GRAY, Gfx.COLOR_TRANSPARENT);
