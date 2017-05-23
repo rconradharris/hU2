@@ -13,6 +13,8 @@
     <string id="discovering_bridge0">Discovering</string>
     <string id="discovering_bridge1">Hue Bridge...</string>
     <string id="init">Loading</string>
+    <string id="needs_update0">Hue Bridge</string>
+    <string id="needs_update1">Needs Update</string>
     <string id="no_bridge0">No Hue Bridge</string>
     <string id="no_bridge1">Detected</string>
     <string id="no_lights0">No Lights</string>

@@ -74,9 +74,9 @@ module Hue {
                 }
                 var apiVersion = Utils.split(apiVersionStr, ["."]);
                 var versionSize = apiVersion.size();
-                var major = (versionSize >= 1) ? apiVersion[0] : 0;
-                var minor = (versionSize >= 2) ? apiVersion[1] : 0;
-                var patch = (versionSize >= 3) ? apiVersion[2] : 0;
+                var major = (versionSize >= 1) ? apiVersion[0].toNumber() : 0;
+                var minor = (versionSize >= 2) ? apiVersion[1].toNumber() : 0;
+                var patch = (versionSize >= 3) ? apiVersion[2].toNumber() : 0;
                 status = { :bridgeIP => mBridgeIP,
                            :apiVersion => [major, minor, patch] };
             }

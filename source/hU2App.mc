@@ -10,6 +10,7 @@ class hU2App extends Application.AppBase {
         AS_INIT,
         AS_DISCOVERING_BRIDGE,
         AS_NO_BRIDGE,
+        AS_BRIDGE_NEEDS_UPDATE,
         AS_NO_USERNAME,
         AS_REGISTERING,
         AS_PHONE_NOT_CONNECTED,
@@ -21,6 +22,7 @@ class hU2App extends Application.AppBase {
 
     hidden const BLINKER_TIMER_MS = 50;
     hidden const STATE_TIMER_MS = 3000;
+    hidden const MIN_API_VERSION = [1, 3, 0];
 
     // === START OF RESET NEEDED ===
     //
@@ -166,10 +168,18 @@ class hU2App extends Application.AppBase {
             }
         } else {
             blinkerDown();
-            setState(AS_NO_USERNAME);
-            PropertyStore.set("bridgeIP", status[:bridgeIP]);
-            PropertyStore.set("apiVersion", status[:apiVersion]);
-            mBridge = new Hue.Bridge(status[:bridgeIP], status[:apiVersion]);
+            var apiVersion = status[:apiVersion];
+            if (Utils.versionLt(apiVersion, MIN_API_VERSION)) {
+                // We rely on light data being returned in light list API call
+                // which only happens in 1.3+
+                setState(AS_BRIDGE_NEEDS_UPDATE);
+            } else {
+                setState(AS_NO_USERNAME);
+                var bridgeIP = status[:bridgeIP];
+                PropertyStore.set("bridgeIP", bridgeIP);
+                PropertyStore.set("apiVersion", apiVersion);
+                mBridge = new Hue.Bridge(bridgeIP, apiVersion);
+            }
         }
     }
 

@@ -58,4 +58,10 @@ module Utils {
 
         return items;
     }
+
+    function versionLt(left, right) {
+        var leftReduced  =  left[0] * 1000 +  left[1] * 100 +  left[2] * 1;
+        var rightReduced = right[0] * 1000 + right[1] * 100 + right[2] * 1;
+        return leftReduced < rightReduced;
+    }
 }

@@ -149,6 +149,10 @@ class hU2View extends Ui.View {
             var lines = [Ui.loadResource(Rez.Strings.no_lights0),
                          Ui.loadResource(Rez.Strings.no_lights1)];
             drawBoxText(dc, boxY, lines, Gfx.COLOR_RED, BOX_TEXT_COLOR);
+        } else if (state == app.AS_BRIDGE_NEEDS_UPDATE) {
+            var lines = [Ui.loadResource(Rez.Strings.needs_update0),
+                         Ui.loadResource(Rez.Strings.needs_update1)];
+            drawBoxText(dc, boxY, lines, Gfx.COLOR_RED, BOX_TEXT_COLOR);
         } else if (app.areActionsAllowed()) {
             drawBoxText(dc, boxY, [Ui.loadResource(Rez.Strings.ready)],
                         Gfx.COLOR_GREEN, BOX_TEXT_COLOR);
