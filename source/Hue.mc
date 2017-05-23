@@ -486,6 +486,13 @@ module Hue {
                         }
                     } // end for each response item
                 } // end for each param
+                // HACK: If a light is turned off, the Hue API won't let us
+                // know that color loop was disabled, so we need to manually
+                // handle that case
+                if (updatedState.hasKey("on") && (updatedState["on"] == false)
+                                              && mLight.isColorLoop()) {
+                    updatedState["effect"] = "none";
+                }
                 mLight.updateState(updatedState);
             }
             if (mCallback != null) {
