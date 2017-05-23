@@ -76,9 +76,9 @@ module Hue {
                 var versionSize = apiVersion.size();
                 var major = (versionSize >= 1) ? apiVersion[0] : 0;
                 var minor = (versionSize >= 2) ? apiVersion[1] : 0;
-                var extra = (versionSize >= 3) ? apiVersion[2] : 0;
+                var patch = (versionSize >= 3) ? apiVersion[2] : 0;
                 status = { :bridgeIP => mBridgeIP,
-                           :apiVersion => [major, minor, extra] };
+                           :apiVersion => [major, minor, patch] };
             }
             if (mCallback != null) {
                 mCallback.invoke(status);
