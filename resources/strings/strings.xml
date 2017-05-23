@@ -4,7 +4,6 @@
     <string id="AppVersion">0.5</string>
     <string id="all_off">All Off</string>
     <string id="all_on">All On</string>
-    <string id="blue">Blue</string>
     <string id="bridge_ip">Hue Bridge IP</string>
     <string id="brightness">Brightness</string>
     <string id="color">Color</string>
@@ -24,7 +23,6 @@
     <string id="press_button0">Press Button</string>
     <string id="press_button1">on Hue Bridge</string>
     <string id="ready">Ready</string>
-    <string id="red">Red</string>
     <string id="reset">Reset</string>
     <string id="syncing">Syncing...</string>
     <string id="unreachable">Unreachable</string>

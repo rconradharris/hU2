@@ -114,8 +114,6 @@ class LightMenuInputDelegate extends Ui.MenuInputDelegate {
             menu.setTitle(Ui.loadResource(Rez.Strings.color));
             menu.addItem(Ui.loadResource(Rez.Strings.warm_white), :warm_white);
             menu.addItem(Ui.loadResource(Rez.Strings.cool_white), :cool_white);
-            menu.addItem(Ui.loadResource(Rez.Strings.red), :red);
-            menu.addItem(Ui.loadResource(Rez.Strings.blue), :blue);
             menu.addItem(Ui.loadResource(Rez.Strings.color_loop), :color_loop);
             Ui.pushView(menu, new ColorMenuInputDelegate(mLight), Ui.SLIDE_UP);
         }
@@ -144,10 +142,6 @@ class ColorMenuInputDelegate extends Ui.MenuInputDelegate {
             xy = [0.475800, 0.413200];
         } else if (item == :cool_white) {
             xy = [0.3227,0.329];
-        } else if (item == :red) {
-            xy = [0.674,0.322];
-        } else if (item == :blue) {
-            xy = [0.1825,0.0697];
         }
         if (xy != null) {
             HueCommand.run(HueCommand.CMD_SET_XY, { :light => mLight, :xy => xy });

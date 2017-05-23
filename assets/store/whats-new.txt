@@ -3,6 +3,7 @@
 
 - Start on the last light you used
 - Added check to make sure Hue Bridge firmware is new enough to work with hU2
+- Removed 'Red' and 'Blue' color options which aren't very useful. May add a custom color feature later...
 
 0.4
 ===
