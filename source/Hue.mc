@@ -100,7 +100,9 @@ module Hue {
                     }
                 }
             } else {
-                mCallback.invoke(null);
+                if (mCallback != null) {
+                    mCallback.invoke(null);
+                }
             }
         }
     }
@@ -108,6 +110,10 @@ module Hue {
     // Hack to allow us to build a callback closure
     class _RegisterCallback {
         hidden var mCallback = null;
+
+        function initialize(callback) {
+            mCallback = callback;
+        }
 
         function onResponse(responseCode, data) {
             var status = REGISTRATION_FAILED;
@@ -136,12 +142,9 @@ module Hue {
                 status = REGISTRATION_WAITING;
             }
 
-            mCallback.invoke(status, username);
-        }
-
-
-        function initialize(callback) {
-            mCallback = callback;
+            if (mCallback != null) {
+                mCallback.invoke(status, username);
+            }
         }
     }
 
