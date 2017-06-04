@@ -92,13 +92,13 @@ class hU2App extends Application.AppBase {
     }
 
     hidden function sync() {
-        blinkerUp();
         var count = mHueClient.getLights().size();
         if (count > 0) {
             setState(AS_UPDATING);
         } else {
             setState(AS_FETCHING);
         }
+        blinkerUp();
         mHueClient.sync(method(:onSync));
     }
 
@@ -111,6 +111,10 @@ class hU2App extends Application.AppBase {
     }
 
     hidden function tryInitBridge() {
+        // Make sure all timers are stopped to avoid races, especially if we're resetting...
+        mBlinkerTimer.stop();
+        mStateTimer.stop();
+
         var bridgeIP = null;
 
         // Use bridgeIP if available (allows overriding if necessary)
@@ -127,8 +131,8 @@ class hU2App extends Application.AppBase {
         var apiVersion = PropertyStore.get("apiVersion");
 
         if (bridgeIP != null && apiVersion != null) {
-            setState(AS_NO_USERNAME);
             mBridge = new Hue.Bridge(bridgeIP, apiVersion);
+            setState(AS_NO_USERNAME);
             var username = PropertyStore.get("username");
             if (username != null) {
                 mHueClient = new Hue.Client(mBridge, username);
@@ -139,6 +143,10 @@ class hU2App extends Application.AppBase {
                 }
             }
         }
+
+        // Start the state timer...
+        mStateTimer.start(method(:onStateTick), STATE_TIMER_MS, true);
+        onStateTick();
     }
 
     function areActionsAllowed() {
@@ -151,10 +159,6 @@ class hU2App extends Application.AppBase {
         mStateTimer = new Timer.Timer();
 
         tryInitBridge();
-
-        // Start the state timer...
-        mStateTimer.start(method(:onStateTick), STATE_TIMER_MS, true);
-        onStateTick();
     }
 
     function onDiscoverBridgeIP(status) {
@@ -174,11 +178,11 @@ class hU2App extends Application.AppBase {
                 // which only happens in 1.3+
                 setState(AS_BRIDGE_NEEDS_UPDATE);
             } else {
-                setState(AS_NO_USERNAME);
                 var bridgeIP = status[:bridgeIP];
                 PropertyStore.set("bridgeIP", bridgeIP);
                 PropertyStore.set("apiVersion", apiVersion);
                 mBridge = new Hue.Bridge(bridgeIP, apiVersion);
+                setState(AS_NO_USERNAME);
             }
         }
     }
@@ -278,9 +282,6 @@ class hU2App extends Application.AppBase {
         mBlinkerSemaphore = 0;
 
         // === END OF RESET NEEDED ===
-
-        // Make sure blinker is zero'd and stopped when we begin
-        mBlinkerTimer.stop();
 
         tryInitBridge();
     }
