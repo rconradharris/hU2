@@ -13,7 +13,6 @@ class hU2App extends Application.AppBase {
         AS_BRIDGE_NEEDS_UPDATE,
         AS_NO_USERNAME,
         AS_REGISTERING,
-        AS_PHONE_NOT_CONNECTED,
         AS_FETCHING,                // First sync, we don't have stored lights we can show
         AS_UPDATING,                // Subsequent sync, we have cached lights, so show them
         AS_NO_LIGHTS,
@@ -32,7 +31,6 @@ class hU2App extends Application.AppBase {
     hidden var mBridge = null;
     hidden var mUsername = null;
     hidden var mHueClient = null;
-    hidden var mSynced = false;
     hidden var mDiscoverAttemptsLeft = 5;
     hidden var mBlinkerSemaphore = 0;
 
@@ -91,7 +89,11 @@ class hU2App extends Application.AppBase {
         }
     }
 
-    hidden function sync() {
+    hidden function sync(username) {
+        if (!System.getDeviceSettings().phoneConnected) {
+            return;
+        }
+        mHueClient = new Hue.Client(mBridge, username);
         var count = mHueClient.getLights().size();
         if (count > 0) {
             setState(AS_UPDATING);
@@ -135,12 +137,7 @@ class hU2App extends Application.AppBase {
             setState(AS_NO_USERNAME);
             var username = PropertyStore.get("username");
             if (username != null) {
-                mHueClient = new Hue.Client(mBridge, username);
-                if (System.getDeviceSettings().phoneConnected) {
-                    sync();
-                } else {
-                    setState(AS_PHONE_NOT_CONNECTED);
-                }
+                sync(username);
             }
         }
 
@@ -190,12 +187,7 @@ class hU2App extends Application.AppBase {
     function onRegister(status, username) {
         if (status == Hue.REGISTRATION_SUCCESS) {
             PropertyStore.set("username", username);
-            mHueClient = new Hue.Client(mBridge, username);
-            if (System.getDeviceSettings().phoneConnected) {
-                sync();
-            } else {
-                setState(AS_PHONE_NOT_CONNECTED);
-            }
+            sync(username);
         } else if (status == Hue.REGISTRATION_WAITING) {
             setState(AS_NO_USERNAME);
         } else if (status == Hue.REGISTRATION_FAILED) {
@@ -207,7 +199,6 @@ class hU2App extends Application.AppBase {
         blinkerDown();
         if (status == Hue.SYNC_SUCCESS) {
             setState(AS_READY);
-            mSynced = true;
             // Run any enqueued commands now that we're synced up
             HueCommand.flush();
         } else if (status == Hue.SYNC_NO_LIGHTS) {
@@ -223,29 +214,15 @@ class hU2App extends Application.AppBase {
     }
 
     function onStateTick() {
-        var state = mState;
-
-        var phoneConnected = System.getDeviceSettings().phoneConnected;
-
-        if (state == AS_INIT) {
+        if (!System.getDeviceSettings().phoneConnected) {
+            // Do nothing...
+        } else if (mState == AS_INIT) {
             setState(AS_DISCOVERING_BRIDGE);
             blinkerUp();
             Hue.discoverBridgeIP(method(:onDiscoverBridgeIP));
-        } else if (state == AS_NO_USERNAME) {
+        } else if (mState == AS_NO_USERNAME) {
             setState(AS_REGISTERING);
             mBridge.register(method(:onRegister));
-        } else if (state == AS_PHONE_NOT_CONNECTED) {
-            if (phoneConnected) {
-                if (mSynced) {
-                    setState(AS_READY);
-                } else {
-                    sync();
-                }
-            }
-        } else {
-            if (!phoneConnected) {
-                setState(AS_PHONE_NOT_CONNECTED);
-            }
         }
     }
 
@@ -277,7 +254,6 @@ class hU2App extends Application.AppBase {
         mBridge = null;
         mUsername = null;
         mHueClient = null;
-        mSynced = false;
         mDiscoverAttemptsLeft = 5;
         mBlinkerSemaphore = 0;
 

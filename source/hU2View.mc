@@ -120,7 +120,12 @@ class hU2View extends Ui.View {
         var boxY = dc.getHeight() / 2 + app.getPixelsBelowCenter();
 
         var state = app.getState();
-        if (state == app.AS_INIT) {
+
+        if (!System.getDeviceSettings().phoneConnected) {
+            var lines = [Ui.loadResource(Rez.Strings.phone_not_connected0),
+                         Ui.loadResource(Rez.Strings.phone_not_connected1)];
+            drawBoxText(dc, boxY, lines, Gfx.COLOR_RED, BOX_TEXT_COLOR);
+        } else if (state == app.AS_INIT) {
             drawBoxText(dc, boxY, [Ui.loadResource(Rez.Strings.init)],
                         Gfx.COLOR_BLUE, BOX_TEXT_COLOR);
         } else if (state == app.AS_NO_BRIDGE) {
@@ -137,10 +142,6 @@ class hU2View extends Ui.View {
             var lines = [Ui.loadResource(Rez.Strings.press_button0),
                          Ui.loadResource(Rez.Strings.press_button1)];
             drawBoxText(dc, boxY, lines, Gfx.COLOR_BLUE, BOX_TEXT_COLOR);
-        } else if (state == app.AS_PHONE_NOT_CONNECTED) {
-            var lines = [Ui.loadResource(Rez.Strings.phone_not_connected0),
-                         Ui.loadResource(Rez.Strings.phone_not_connected1)];
-            drawBoxText(dc, boxY, lines, Gfx.COLOR_RED, BOX_TEXT_COLOR);
         } else if (state == app.AS_FETCHING) {
             var textColor = (mBlinkCount > 10) ? null : BOX_TEXT_COLOR;
             mBlinkCount = (mBlinkCount + 1) % 20;
