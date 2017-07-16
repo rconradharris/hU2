@@ -9,3 +9,6 @@ side-load-fast:
 
 tail-log:
 	./tools/tail-log
+
+clear-logs:
+	./tools/clear-logs
