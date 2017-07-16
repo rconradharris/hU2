@@ -1,3 +1,8 @@
+0.7
+===
+
+- Fixing a crash that affects the Fenix 5 series of watches
+
 0.6
 ===
 

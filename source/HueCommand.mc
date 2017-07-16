@@ -14,6 +14,54 @@ module HueCommand {
 
     hidden var mQueue = null;
 
+    // NOTE: THIS IS ABSOLUTELY INSANE BUT THIS FUNCTION HAS TO BE IN THIS
+    // LOCATION IN THE SOURCE FILE!!!
+    //
+    // On a Fenix5X if you were to move this function below the `run` method
+    // it would fail with this error:
+    //
+    // UnexpectedTypeException: Expected Method, given null
+    //
+    // After hours of debugging, I can't figure this out, but it seems to have
+    // these clues:
+    //
+    // 1. Location in the file matters
+    // 2. Seems to have to do with the `hidden` keyword
+    // 3. Affects the Fenix 5X but not the Vivoactive
+    // 4. Seems to be related to a race where one thread is running the
+    //    `runImmediately` function in the module while another thread tires to
+    //     as well
+    hidden function runImmediately(cmd, options) {
+        var client = Application.getApp().getHueClient();
+        var light = null;
+
+        if (cmd == CMD_TURN_ON_ALL_LIGHTS) {
+            client.turnOnAllLights(options[:on]);
+        } else if (cmd == CMD_TOGGLE_LIGHT) {
+            light = options[:light];
+            var callback = new _LightCommandDoneCallback(light);
+            client.toggleLight(light, callback.method(:onDone));
+        } else if (cmd == CMD_SET_BRIGHTNESS) {
+            light = options[:light];
+            var callback = new _LightCommandDoneCallback(light);
+            client.setBrightness(light, options[:brightness], callback.method(:onDone));
+        } else if (cmd == CMD_SET_XY) {
+            light = options[:light];
+            var callback = new _LightCommandDoneCallback(light);
+            client.setXY(light, options[:xy], callback.method(:onDone));
+        } else if (cmd == CMD_SET_EFFECT) {
+            light = options[:light];
+            var callback = new _LightCommandDoneCallback(light);
+            client.setEffect(light, options[:effect], callback.method(:onDone));
+        }
+
+        if (light != null) {
+            var lightId = light.getId();
+            PropertyStore.set("lastLightId", lightId);
+        }
+    }
+
+
     function run(cmd, options) {
         var app = Application.getApp();
         if (app.getState() == app.AS_READY) {
@@ -53,36 +101,6 @@ module HueCommand {
             mQueue = [options];
         } else {
             mQueue.add(options);
-        }
-    }
-
-    hidden function runImmediately(cmd, options) {
-        var client = Application.getApp().getHueClient();
-        var light = null;
-
-        if (cmd == CMD_TURN_ON_ALL_LIGHTS) {
-            client.turnOnAllLights(options[:on]);
-        } else if (cmd == CMD_TOGGLE_LIGHT) {
-            light = options[:light];
-            var callback = new _LightCommandDoneCallback(light);
-            client.toggleLight(light, callback.method(:onDone));
-        } else if (cmd == CMD_SET_BRIGHTNESS) {
-            light = options[:light];
-            var callback = new _LightCommandDoneCallback(light);
-            client.setBrightness(light, options[:brightness], callback.method(:onDone));
-        } else if (cmd == CMD_SET_XY) {
-            light = options[:light];
-            var callback = new _LightCommandDoneCallback(light);
-            client.setXY(light, options[:xy], callback.method(:onDone));
-        } else if (cmd == CMD_SET_EFFECT) {
-            light = options[:light];
-            var callback = new _LightCommandDoneCallback(light);
-            client.setEffect(light, options[:effect], callback.method(:onDone));
-        }
-
-        if (light != null) {
-            var lightId = light.getId();
-            PropertyStore.set("lastLightId", lightId);
         }
     }
 

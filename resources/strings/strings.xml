@@ -1,7 +1,7 @@
 <strings>
     <string id="AppName">hU2</string>
     <string id="AppDescription">Hue Light Controller</string>
-    <string id="AppVersion">0.6</string>
+    <string id="AppVersion">0.7</string>
     <string id="all_off">All Off</string>
     <string id="all_on">All On</string>
     <string id="bridge_ip">Hue Bridge IP</string>
