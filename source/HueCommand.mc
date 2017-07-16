@@ -33,24 +33,20 @@ module HueCommand {
     //     as well
     hidden function runImmediately(cmd, options) {
         var client = Application.getApp().getHueClient();
-        var light = null;
+        var light = (options == null) ? null : options[:light];
 
         if (cmd == CMD_TURN_ON_ALL_LIGHTS) {
             client.turnOnAllLights(options[:on]);
         } else if (cmd == CMD_TOGGLE_LIGHT) {
-            light = options[:light];
             var callback = new _LightCommandDoneCallback(light);
             client.toggleLight(light, callback.method(:onDone));
         } else if (cmd == CMD_SET_BRIGHTNESS) {
-            light = options[:light];
             var callback = new _LightCommandDoneCallback(light);
             client.setBrightness(light, options[:brightness], callback.method(:onDone));
         } else if (cmd == CMD_SET_XY) {
-            light = options[:light];
             var callback = new _LightCommandDoneCallback(light);
             client.setXY(light, options[:xy], callback.method(:onDone));
         } else if (cmd == CMD_SET_EFFECT) {
-            light = options[:light];
             var callback = new _LightCommandDoneCallback(light);
             client.setEffect(light, options[:effect], callback.method(:onDone));
         }
