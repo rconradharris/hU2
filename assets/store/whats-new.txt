@@ -1,6 +1,7 @@
 0.7
 ===
 
+- Added Approach S60 support
 - Fixing a crash that affects the Fenix 5 series of watches
 
 0.6
