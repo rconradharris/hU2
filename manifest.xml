@@ -5,6 +5,7 @@
             <iq:product id="approachs60"/>
             <iq:product id="d2bravo"/>
             <iq:product id="d2bravo_titanium"/>
+            <iq:product id="d2charlie"/>
             <iq:product id="fenix3"/>
             <iq:product id="fenix3_hr"/>
             <iq:product id="fenix5"/>
@@ -19,6 +20,7 @@
             <iq:product id="fr935"/>
             <iq:product id="vivoactive"/>
             <iq:product id="vivoactive_hr"/>
+            <iq:product id="vivoactive3"/>
         </iq:products>
 
         <iq:permissions>
