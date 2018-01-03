@@ -1,3 +1,8 @@
+0.8
+===
+
+- Fixed crash when resetting app
+
 0.7
 ===
 

@@ -22,7 +22,7 @@ class SettingsMenuInputDelegate extends Ui.MenuInputDelegate {
                 HueCommand.run(HueCommand.CMD_TURN_ON_ALL_LIGHTS, { :on => true });
             }
         } else if (item == :reset) {
-            Ui.pushView(new Ui.Confirmation.initialize(Ui.loadResource(Rez.Strings.reset) + "?"),
+            Ui.pushView(new Ui.Confirmation(Ui.loadResource(Rez.Strings.reset) + "?"),
                         new ResetConfirmationDelegate(),
                         Ui.SLIDE_IMMEDIATE);
 
